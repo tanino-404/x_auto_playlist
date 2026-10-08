@@ -1,16 +1,20 @@
 // Auto-scroll while playing (docs/architecture.md §6.6, requirements F-02 / S-13).
-// Scrolls one viewport at a time so X loads more of the timeline, which the collector then
+// Scrolls SCROLL.stepViewports[pace] viewports at a time (F-65) so X loads more of the timeline, which the collector then
 // turns into auto playlist items. Never scrolls unless playback is "playing" (F-02).
 // The decision itself lives in ./logic.ts (pure); this file only wires signals and timers.
 
 import type { ReadonlySignal } from "@preact/signals";
-import { effect, signal } from "@preact/signals";
+import { computed, effect, signal } from "@preact/signals";
 import type { Navigation } from "@/lib/navigation";
+import type { Player } from "@/lib/player";
 import {
   BOTTOM_STREAK_LIMIT,
   countRemaining,
   decideScroll,
+  MEDIA_ENDING_SEC,
+  mediaRemainingSec,
   type ScrollDecision,
+  scrollStepPx,
 } from "@/lib/scroller/logic";
 import type { Store } from "@/lib/store";
 import { SCROLL } from "@/shared/constants";
@@ -32,9 +36,22 @@ function isAtPageBottom(): boolean {
   return doc.scrollHeight - (window.scrollY + window.innerHeight) < BOTTOM_EPSILON_PX;
 }
 
-export function createScroller(deps: { store: Store; navigation: Navigation }): Scroller {
-  const { store, navigation } = deps;
+export function createScroller(deps: {
+  store: Store;
+  navigation: Navigation;
+  /** Optional: enables the "media about to end" immediate scroll (F-65). */
+  player?: Pick<Player, "currentTime" | "duration">;
+}): Scroller {
+  const { store, navigation, player } = deps;
   const state = signal<ScrollerState>("idle");
+  /** Flips only when crossing MEDIA_ENDING_SEC, so the effect does not run on every tick. */
+  const mediaEnding = computed(() => {
+    if (!player) {
+      return false;
+    }
+    const left = mediaRemainingSec(player.currentTime.value, player.duration.value);
+    return left !== null && left < MEDIA_ENDING_SEC;
+  });
 
   let timer: ReturnType<typeof setTimeout> | undefined;
   let lastScrollAt: number | null = null;
@@ -46,6 +63,8 @@ export function createScroller(deps: { store: Store; navigation: Navigation }): 
   let lastItemsLength = 0;
   let lastPageKey = "";
   let lastRateLimit: unknown = null;
+  let mediaEndingSince: number | null = null;
+  let lastCurrentId: string | null = null;
   let disposed = false;
 
   const clearTimer = () => {
@@ -91,6 +110,7 @@ export function createScroller(deps: { store: Store; navigation: Navigation }): 
       rateLimit: store.rateLimit.peek(),
       rateLimitSeenAt,
       bottomStreak,
+      mediaEndingSince,
     });
   };
 
@@ -130,9 +150,13 @@ export function createScroller(deps: { store: Store; navigation: Navigation }): 
         }
         lastScrollAt = Date.now();
         itemsAtLastScroll = length;
-        window.scrollBy({ top: window.innerHeight, behavior: "smooth" });
+        window.scrollBy({
+          top: scrollStepPx(store.settings.peek().scrollPace, window.innerHeight),
+          behavior: "smooth",
+        });
         setState("scrolling");
-        // Re-evaluate right away: this schedules the interval wait ("waiting-response").
+        // Re-evaluate right away: this schedules the interval wait. When it passes we scroll
+        // again even if nothing new arrived ("waiting-response" is only a status label).
         evaluate();
         return;
       }
@@ -144,6 +168,7 @@ export function createScroller(deps: { store: Store; navigation: Navigation }): 
     store.settings.value;
     store.visibleItems.value;
     navigation.current.value;
+    const ending = mediaEnding.value;
     const playback = store.playback.value;
     const rateLimit = store.rateLimit.value;
     const auto = store.playlist.value.auto;
@@ -164,6 +189,17 @@ export function createScroller(deps: { store: Store; navigation: Navigation }): 
       bottomStreak = 0;
     }
     lastItemsLength = auto.items.length;
+
+    if (playback.currentId !== lastCurrentId) {
+      // New item: its "about to end" phase starts fresh.
+      lastCurrentId = playback.currentId;
+      mediaEndingSince = null;
+    }
+    if (ending) {
+      mediaEndingSince ??= now;
+    } else {
+      mediaEndingSince = null;
+    }
 
     if (playback.awaitingMore) {
       awaitingSince ??= now;

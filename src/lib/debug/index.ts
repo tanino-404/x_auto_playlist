@@ -23,6 +23,7 @@
 
 import type { ContextTarget } from "@/lib/context-target";
 import { hotkeyContext, resolveHotkey } from "@/lib/hotkeys";
+import { currentLanguage } from "@/lib/i18n";
 import type { Navigation } from "@/lib/navigation";
 import type { Player } from "@/lib/player";
 import type { PostAction, PostActions } from "@/lib/post-actions";
@@ -196,6 +197,8 @@ function collectState({ store, player, postCache, navigation, scroller, postActi
     videoCount:
       document.querySelector(UI_HOST_NAME)?.shadowRoot?.querySelectorAll("video").length ?? 0,
     hotkeysEnabled: store.settings.peek().hotkeys,
+    /** F-60: the resolved UI language ("ja" / "en"). */
+    language: currentLanguage.peek(),
     postActions: {
       enabled: store.settings.peek().postActions,
       ready: postActions.ready.peek(),

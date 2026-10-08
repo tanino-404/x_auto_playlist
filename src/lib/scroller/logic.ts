@@ -2,7 +2,7 @@
 
 import type { RateLimitState } from "@/lib/store/collector-state";
 import { SCROLL } from "@/shared/constants";
-import type { PageKind, PlaybackStatus, PlaylistMode } from "@/shared/types";
+import type { PageKind, PlaybackStatus, PlaylistMode, ScrollPace } from "@/shared/types";
 
 /** Pages whose timeline the collector turns into the auto playlist. */
 export const SCROLLABLE_PAGES: readonly PageKind[] = [
@@ -10,11 +10,32 @@ export const SCROLLABLE_PAGES: readonly PageKind[] = [
   "bookmarks",
   "likes",
   "user-media",
+  "user-posts",
+  "user-replies",
+  "user-reposts",
   "search",
 ];
 
 /** Consecutive scrolls at the bottom of the page without new items before giving up. */
 export const BOTTOM_STREAK_LIMIT = 3;
+
+/** The playing media counts as "about to end" below this many seconds left (F-65). */
+export const MEDIA_ENDING_SEC = 15;
+/** While the media is about to end, scroll right away when this few items (or fewer) remain. */
+export const URGENT_REMAINING_MAX = 2;
+
+/** Pixels one scroll step moves for the given pace (F-65). */
+export function scrollStepPx(pace: ScrollPace, viewportHeight: number): number {
+  return Math.round(viewportHeight * SCROLL.stepViewports[pace]);
+}
+
+/** Seconds left in the playing media, or null when the duration is unknown. */
+export function mediaRemainingSec(currentTime: number, duration: number): number | null {
+  if (!Number.isFinite(duration) || duration <= 0) {
+    return null;
+  }
+  return Math.max(0, duration - currentTime);
+}
 
 export interface ScrollInput {
   autoScroll: boolean;
@@ -35,6 +56,11 @@ export interface ScrollInput {
   rateLimitSeenAt: number | null;
   /** Scrolls done at the page bottom in a row without the list growing. */
   bottomStreak: number;
+  /**
+   * Epoch ms when the playing media fell under MEDIA_ENDING_SEC left (reset per item), or
+   * null while it is not about to end / unknown.
+   */
+  mediaEndingSince?: number | null;
 }
 
 export type ScrollReason =
@@ -49,6 +75,7 @@ export type ScrollReason =
   | "rate-limit-low"
   | "interval"
   | "near-end"
+  | "media-ending"
   | "awaiting-more";
 
 export interface ScrollDecision {
@@ -119,11 +146,26 @@ export function decideScroll(input: ScrollInput): ScrollDecision {
     }
   }
 
+  // F-65: the media is about to end with almost nothing queued -> scroll once right away
+  // without waiting for the interval (once per "ending" phase; then the interval applies).
+  const endingSince = input.mediaEndingSince ?? null;
+  const urgent =
+    !input.awaitingMore &&
+    input.remaining <= URGENT_REMAINING_MAX &&
+    endingSince !== null &&
+    (input.lastScrollAt === null || input.lastScrollAt < endingSince);
+  const gap = urgent ? 0 : input.intervalMs;
+
+  // The interval is the only thing between two scrolls: whether the previous scroll brought
+  // new items or not, scroll again once it has passed (X loads only after enough scrolling).
   if (input.lastScrollAt !== null) {
     const elapsed = now - input.lastScrollAt;
-    if (elapsed < input.intervalMs) {
-      return { action: "wait", waitMs: input.intervalMs - elapsed, reason: "interval" };
+    if (elapsed < gap) {
+      return { action: "wait", waitMs: gap - elapsed, reason: "interval" };
     }
   }
-  return { action: "scroll", reason: input.awaitingMore ? "awaiting-more" : "near-end" };
+  if (input.awaitingMore) {
+    return { action: "scroll", reason: "awaiting-more" };
+  }
+  return { action: "scroll", reason: urgent ? "media-ending" : "near-end" };
 }

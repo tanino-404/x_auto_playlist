@@ -157,6 +157,9 @@ interface Settings { /* S-01〜S-18。既定値は要件 §5 */ }
    | ユーザーのメディア | `UserVideoTimeline` / `UserPhotoTimeline`（`UserMedia` は 2026-08 に廃止） | 同上系統 |
    | 検索 | `SearchTimeline` | `data.search_by_raw_query.search_timeline.timeline.instructions` |
    | 投稿詳細 | `TweetDetail` | 右クリック追加の補助用 |
+   | 個人ページ ポスト `/<user>`（v1.1） | `UserOriginalsTimeline` | `data.user.result.timeline.timeline.instructions`（2026-10-08 実機確認） |
+   | 個人ページ 返信 `/<user>/with_replies`（v1.1） | `UserRepliesTimeline` | 同上 |
+   | 個人ページ リポスト `/<user>/reposts`（v1.1） | `UserRepostsTimeline` | 同上。全エントリが `retweeted_status_result` 入り |
 
    位置は固定せず、`instructions` を再帰的に探して `TimelineAddEntries` と `TimelineAddToModule` の両方を拾う（構造変更に強くする）。
 2. `collector` が各エントリの `tweet_results.result` を解釈する。
@@ -208,7 +211,8 @@ interface Settings { /* S-01〜S-18。既定値は要件 §5 */ }
 - 条件：自動モード・再生中・残り項目が 3 件以下。
 - 動作：`window.scrollBy` で画面 1 枚分ずつ、**最短 5 秒間隔**。応答が来たら一旦止める。
 - 制限検知：`interceptor` が渡す status が 429、または `x-rate-limit-remaining` が 5 未満なら、`x-rate-limit-reset` まで（不明なら 60 秒）待つ。UI に「X の読み込み制限のため待機中」と出す。
-- S-13 の「速さ」は間隔（ゆっくり＝10 秒、普通＝5 秒）。
+- S-13 の「速さ」は間隔（v1.1：ゆっくり＝4 秒、普通＝2 秒、速い＝0.8 秒。1 回の量は画面 1／1.5／2.5 枚分。残り 5 件以下で発火、動画の残り 15 秒未満で残り 2 件以下なら即時）。
+- **全画面中の読み込み（v1.1.1）**：X は `document.fullscreenElement` が非 null の間、タイムラインの行の描画更新と続きの読み込みを止める（実機確認 2026-10-08。ページ本体を全画面にしても同じ）。そのため MAIN world の `fullscreen-shim` が、全画面要素が当拡張機能のホストのときだけ `document.fullscreenElement` / `webkitFullscreenElement` / `webkitIsFullScreen` を `null` / `false` に見せる（`document` の own property。ISOLATED 側は本来の値を見る）。さらに X は **`fullscreenchange` イベントの受信を契機に凍結する**ため、MAIN world の `addEventListener` を包み、当拡張機能の全画面に由来する `fullscreenchange` だけを X のリスナーに渡さない（イベント自体は止めないので ISOLATED 側には届く）。X 自身の動画全画面には影響しない。
 
 ### 6.7 キーボードショートカット
 
@@ -366,3 +370,4 @@ docs/
 | 2026-09-28 | 下書き作成 |
 | 2026-09-28 | 第 1 版。調査 4 件を反映し技術スタックと未決事項を確定。先読み画質の調整（§6.3）を PL 判断として記録 |
 | 2026-09-28 | 実装完了後の更新。分割ビュー（§7.1）、X の「履歴」画面（§6.5）、投稿操作（§6.8）とその実機結果、リスク追記。段階 8（解像度選択、投稿操作、パネル切替とアイコン刷新）を追加実施。最終確認は `docs/final_check.md` |
+| 2026-10-08 | v1.1。i18n モジュール（`src/lib/i18n`、設定 S-21）、個人ページ 3 タブの収集（§6.1 の表）、自動スクロールの 3 段階と即時発火（`SCROLL` 定数、§6.6）、一覧の時間バッジと本文の幅追従、全画面のメディア情報の修正 |

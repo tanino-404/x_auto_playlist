@@ -196,6 +196,19 @@ describe("parseTimelineResponse: other locations", () => {
     ]);
   });
 
+  it("user-originals-timeline.json: pinned post, two-video post, conversation module, repost; ad dropped", () => {
+    const posts = parseTimelineResponse(loadFixture("user-originals-timeline.json"), NOW);
+    expect(posts.map((post) => post.postId)).toEqual(["5001", "5002", "5003", "5004", "5050"]);
+    expect(byId(posts, "5001").items.map((item) => item.id)).toEqual(["7_50001"]);
+    expect(byId(posts, "5002").items.map((item) => item.id)).toEqual(["7_50021", "7_50022"]);
+    expect(byId(posts, "5003").items).toEqual([]);
+    expect(onlyItem(byId(posts, "5004")).kind).toBe("photo");
+    const reposted = onlyItem(byId(posts, "5050"));
+    expect(reposted.author.screenName).toBe("bob");
+    expect(reposted.postUrl).toBe("https://x.com/bob/status/5050");
+    expect(posts.some((post) => post.postId === "5099")).toBe(false);
+  });
+
   it("finds instructions wherever they are", () => {
     const home = loadFixture("home-timeline.json") as {
       data: { home: { home_timeline_urt: unknown } };

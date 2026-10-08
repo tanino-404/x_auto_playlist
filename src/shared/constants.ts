@@ -9,6 +9,13 @@ export const TARGET_OPERATIONS = [
   "UserVideoTimeline",
   "UserPhotoTimeline",
   "UserMedia",
+  // Profile tabs (v1.1). Confirmed on the live site 2026-10-08:
+  // posts `/<user>` → UserOriginalsTimeline, replies `/<user>/with_replies` → UserRepliesTimeline,
+  // reposts `/<user>/reposts` → UserRepostsTimeline (all under data.user.result.timeline.timeline).
+  "UserOriginalsTimeline",
+  "UserRepliesTimeline",
+  "UserRepostsTimeline",
+  "UserHighlightsTweets",
   "SearchTimeline",
   "TweetDetail",
 ] as const;
@@ -46,9 +53,12 @@ export const HOVER_PREVIEW_SECONDS = 5;
 export const POST_CACHE_LIMIT = 2000;
 
 export const SCROLL = {
-  /** Trigger auto-scroll when this many items or fewer remain. */
-  remainingThreshold: 3,
-  intervalMs: { slow: 10_000, normal: 5_000 },
+  /** Trigger auto-scroll when this many items or fewer remain (v1.1: raised from 3). */
+  remainingThreshold: 5,
+  /** Minimum gap between scroll steps per pace (v1.1: all faster, "fast" added). */
+  intervalMs: { slow: 4_000, normal: 2_000, fast: 800 },
+  /** How many viewport heights one step scrolls, per pace. */
+  stepViewports: { slow: 1, normal: 1.5, fast: 2.5 },
   rateLimitRemainingFloor: 5,
   rateLimitFallbackWaitMs: 60_000,
   loadTimeoutMs: 30_000,

@@ -2,6 +2,7 @@
 // Wheel over the control: ±VOLUME_STEP. Click / drag on the bar: that position. Keyboard:
 // arrows ±VOLUME_STEP, Home / End.
 import { useEffect, useRef } from "preact/hooks";
+import { t } from "@/lib/i18n";
 import { formatVolume, roundVolume } from "@/lib/player/logic";
 import { VOLUME_STEP } from "@/shared/constants";
 import { VolumeIcon } from "@/ui/components/icons";
@@ -121,8 +122,8 @@ export function VolumeControl({
       <button
         type="button"
         class="xap-icon-btn"
-        aria-label={muted ? "ミュート解除" : "ミュート"}
-        title={muted ? "ミュート解除" : "ミュート"}
+        aria-label={muted ? t("volume.unmute") : t("volume.mute")}
+        title={muted ? t("volume.unmute") : t("volume.mute")}
         aria-pressed={muted}
         onClick={(event) => {
           event.stopPropagation();
@@ -137,7 +138,7 @@ export function VolumeControl({
         style={{ width: `${barWidth}px` }}
         role="slider"
         tabIndex={0}
-        aria-label="音量"
+        aria-label={t("volume.label")}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={percent}

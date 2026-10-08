@@ -3,6 +3,7 @@
 // status banners, the list (PlaylistList) or the settings screen (stage 6), the toast and the
 // footer (count + 空にする).
 import { useEffect, useRef, useState } from "preact/hooks";
+import { type MessageKey, t } from "@/lib/i18n";
 import type { Player } from "@/lib/player";
 import type { Store } from "@/lib/store";
 import type { PlaylistMode } from "@/shared/types";
@@ -18,7 +19,7 @@ import {
   SettingsIcon,
   ShuffleIcon,
 } from "@/ui/components/icons";
-import { LOOP_LABELS, SHUFFLE_LABEL } from "@/ui/components/labels";
+import { loopLabel, shuffleLabel } from "@/ui/components/labels";
 import { readDurationMs } from "@/ui/components/motion";
 import { Toast } from "@/ui/components/Toast";
 import { VolumeControl } from "@/ui/components/VolumeControl";
@@ -33,9 +34,9 @@ export interface SidePanelProps {
   leaving?: boolean;
 }
 
-const MODES: Array<{ value: PlaylistMode; label: string }> = [
-  { value: "auto", label: "自動" },
-  { value: "manual", label: "手動" },
+const MODES: ReadonlyArray<{ value: PlaylistMode; label: MessageKey }> = [
+  { value: "auto", label: "panel.mode.auto" },
+  { value: "manual", label: "panel.mode.manual" },
 ];
 
 /**
@@ -82,29 +83,29 @@ function Transport({ store, player }: Pick<SidePanelProps, "store" | "player">) 
 
   return (
     <div class="xap-panel__transport">
-      <IconButton label="前へ" onClick={() => player.prev()} disabled={!hasCurrent}>
+      <IconButton label={t("transport.prev")} onClick={() => player.prev()} disabled={!hasCurrent}>
         <PrevIcon />
       </IconButton>
       <IconButton
-        label={playing ? "一時停止" : "再生"}
+        label={playing ? t("transport.pause") : t("transport.play")}
         onClick={onPlayPause}
         disabled={!playing && status !== "paused" && count === 0}
         class="xap-panel__play-btn"
       >
         {playing ? <PauseIcon size={20} /> : <PlayIcon size={20} />}
       </IconButton>
-      <IconButton label="次へ" onClick={() => player.next()} disabled={!hasCurrent}>
+      <IconButton label={t("transport.next")} onClick={() => player.next()} disabled={!hasCurrent}>
         <NextIcon />
       </IconButton>
       <span class="xap-panel__transport-gap" />
       <IconButton
-        label={LOOP_LABELS[loop]}
+        label={loopLabel(loop)}
         onClick={() => player.cycleLoop()}
         active={loop !== "off"}
       >
         <LoopIcon one={loop === "one"} />
       </IconButton>
-      <IconButton label={SHUFFLE_LABEL} onClick={() => player.toggleShuffle()} pressed={shuffle}>
+      <IconButton label={shuffleLabel()} onClick={() => player.toggleShuffle()} pressed={shuffle}>
         <ShuffleIcon />
       </IconButton>
       <span class="xap-panel__transport-gap" />
@@ -116,7 +117,7 @@ function Transport({ store, player }: Pick<SidePanelProps, "store" | "player">) 
         barWidth={56}
       />
       <span class="xap-panel__position" aria-live="off">
-        {index === -1 ? `${count} 件` : `${index + 1} / ${count}`}
+        {index === -1 ? t("panel.count", { count }) : `${index + 1} / ${count}`}
       </span>
     </div>
   );
@@ -151,12 +152,12 @@ function StatusBanners({ store }: { store: Store }) {
     <div class="xap-panel__banners">
       {broken && (
         <p class="xap-panel__banner" data-tone="danger" role="alert">
-          X から情報を取得できません。拡張機能の更新が必要かもしれません
+          {t("panel.banner.broken")}
         </p>
       )}
       {limited && (
         <p class="xap-panel__banner" data-tone="muted" role="status">
-          X の読み込み制限のため待機中
+          {t("panel.banner.rateLimited")}
         </p>
       )}
     </div>
@@ -237,7 +238,7 @@ export function SidePanel({ store, player, leaving = false }: SidePanelProps) {
           <AppMarkIcon size={20} />
           <span class="xap-panel__title">X Auto Playlist</span>
         </span>
-        <fieldset class="xap-panel__mode" aria-label="プレイリストのモード">
+        <fieldset class="xap-panel__mode" aria-label={t("panel.mode.label")}>
           {MODES.map((item) => (
             <button
               key={item.value}
@@ -246,15 +247,15 @@ export function SidePanel({ store, player, leaving = false }: SidePanelProps) {
               aria-pressed={mode === item.value}
               onClick={() => store.updateSettings({ mode: item.value })}
             >
-              {item.label}
+              {t(item.label)}
             </button>
           ))}
         </fieldset>
         <button
           type="button"
           class="xap-panel__icon-btn"
-          aria-label="設定"
-          title="設定"
+          aria-label={t("panel.settings")}
+          title={t("panel.settings")}
           aria-pressed={view === "settings"}
           onClick={() => setView(view === "settings" ? "list" : "settings")}
         >
@@ -263,8 +264,8 @@ export function SidePanel({ store, player, leaving = false }: SidePanelProps) {
         <button
           type="button"
           class="xap-panel__icon-btn"
-          aria-label="閉じる"
-          title="閉じる"
+          aria-label={t("panel.close")}
+          title={t("panel.close")}
           onClick={() => store.setPanelOpen(false)}
         >
           <CloseIcon />
@@ -280,7 +281,7 @@ export function SidePanel({ store, player, leaving = false }: SidePanelProps) {
           <StatusBanners store={store} />
           <div class="xap-panel__body" data-empty={itemCount === 0 ? "true" : "false"}>
             {itemCount === 0 ? (
-              <p class="xap-panel__empty">まだメディアがありません</p>
+              <p class="xap-panel__empty">{t("panel.empty")}</p>
             ) : (
               <PlaylistList store={store} player={player} />
             )}
@@ -291,16 +292,16 @@ export function SidePanel({ store, player, leaving = false }: SidePanelProps) {
       <Toast store={store} />
 
       <footer class="xap-panel__footer">
-        <span>{itemCount} 件</span>
+        <span>{t("panel.count", { count: itemCount })}</span>
         <button
           type="button"
           class="xap-panel__clear-btn"
-          aria-label="プレイリストを空にする"
-          title="プレイリストを空にする"
+          aria-label={t("panel.clear.label")}
+          title={t("panel.clear.label")}
           disabled={itemCount === 0}
           onClick={() => store.clearPlaylist()}
         >
-          空にする
+          {t("panel.clear")}
         </button>
       </footer>
     </div>

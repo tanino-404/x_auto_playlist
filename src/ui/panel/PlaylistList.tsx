@@ -9,10 +9,11 @@
 // - row menu: 削除 / 次に再生 / 元ポストを開く (F-12 / F-25)
 import { createPortal } from "preact/compat";
 import { useContext, useEffect, useRef, useState } from "preact/hooks";
+import { t } from "@/lib/i18n";
 import type { Player } from "@/lib/player";
+import { formatTime } from "@/lib/player/logic";
 import type { Store } from "@/lib/store";
 import { gapToIndex } from "@/lib/store/playlist";
-import { TEXT_PREVIEW_LENGTH } from "@/shared/constants";
 import type { PlaylistItem } from "@/shared/types";
 import { GripIcon, MoreIcon, PlayIcon } from "@/ui/components/icons";
 import type { MenuOption } from "@/ui/components/Menu";
@@ -29,11 +30,14 @@ export interface PlaylistListProps {
 
 type RowAction = "remove" | "playNext" | "openPost";
 
-const ROW_MENU: ReadonlyArray<MenuOption<RowAction>> = [
-  { value: "remove", label: "削除" },
-  { value: "playNext", label: "次に再生" },
-  { value: "openPost", label: "元ポストを開く" },
-];
+/** Built per render so the labels follow the UI language (F-60). */
+function rowMenu(): ReadonlyArray<MenuOption<RowAction>> {
+  return [
+    { value: "remove", label: t("list.menu.remove") },
+    { value: "playNext", label: t("list.menu.playNext") },
+    { value: "openPost", label: t("list.menu.openPost") },
+  ];
+}
 
 /** Pixels from the list's top / bottom edge where dragging auto-scrolls. */
 const DRAG_SCROLL_EDGE = 32;
@@ -44,12 +48,20 @@ const ROW_ENTER_LIMIT = 12;
 /** How long a new row keeps its entrance class (longer than --xap-dur-slow). */
 const ROW_ENTER_MS = 400;
 
-/** First TEXT_PREVIEW_LENGTH characters (code points), whitespace collapsed. */
+/**
+ * The first line of the post text (F-64). The row's CSS trims it to the panel width with an
+ * ellipsis, so how much shows follows the panel width.
+ */
 function previewText(text: string): string {
-  const chars = Array.from(text.replace(/\s+/g, " ").trim());
-  return chars.length > TEXT_PREVIEW_LENGTH
-    ? `${chars.slice(0, TEXT_PREVIEW_LENGTH).join("")}…`
-    : chars.join("");
+  return (text.trim().split(/\r?\n/, 1)[0] ?? "").trim();
+}
+
+/** Total length for the thumbnail badge (F-62); none for photos or unknown durations. */
+function durationLabel(item: PlaylistItem): string | null {
+  if (item.kind === "photo" || item.durationMs === undefined || item.durationMs <= 0) {
+    return null;
+  }
+  return formatTime(item.durationMs / 1000);
 }
 
 interface DragState {
@@ -128,6 +140,8 @@ interface RowProps {
 
 function PlaylistRow(props: RowProps) {
   const { item, index, selected, playing, played, reorderable, dragging, drop, hoverSrc } = props;
+  const duration = durationLabel(item);
+  const preview = previewText(item.text);
   return (
     <div
       class={props.entering ? "xap-panel__row xap-panel__row--enter" : "xap-panel__row"}
@@ -160,8 +174,8 @@ function PlaylistRow(props: RowProps) {
         <button
           type="button"
           class="xap-panel__grip"
-          aria-label="並べ替え"
-          title="ドラッグして並べ替え"
+          aria-label={t("list.reorder")}
+          title={t("list.reorder.title")}
           data-xap-reorder-handle="true"
           tabIndex={-1}
           onPointerDown={(event) => props.onHandleDown(event, index)}
@@ -181,6 +195,11 @@ function PlaylistRow(props: RowProps) {
       >
         {item.thumbnailUrl && <img src={item.thumbnailUrl} alt="" loading="lazy" />}
         {hoverSrc !== null && <HoverPreview src={hoverSrc} />}
+        {duration !== null && (
+          <span class="xap-panel__duration" data-xap-duration="true">
+            {duration}
+          </span>
+        )}
         {playing && (
           <span class="xap-panel__playing-icon">
             <PlayIcon size={20} />
@@ -190,16 +209,16 @@ function PlaylistRow(props: RowProps) {
       <div class="xap-panel__meta">
         <span class="xap-panel__author">
           @{item.author.screenName}
-          {!item.playable && <span class="xap-panel__badge">再生不可</span>}
+          {!item.playable && <span class="xap-panel__badge">{t("list.unplayable")}</span>}
         </span>
-        <span class="xap-panel__text">{previewText(item.text)}</span>
+        {preview !== "" && <span class="xap-panel__text">{preview}</span>}
       </div>
       <div class="xap-panel__row-menu" data-xap-row-menu="true">
         <Menu
-          label="項目のメニュー"
+          label={t("list.menu.label")}
           buttonContent={<MoreIcon size={16} />}
           triggerClass="xap-panel__row-menu-btn"
-          options={ROW_MENU}
+          options={rowMenu()}
           placement="below"
           portal
           onSelect={(action) => props.onAction(item, action)}
@@ -494,7 +513,7 @@ export function PlaylistList({ store, player }: PlaylistListProps) {
       ref={listRef}
       class="xap-panel__list"
       role="listbox"
-      aria-label="プレイリスト"
+      aria-label={t("list.label")}
       data-reordering={drag !== null ? "true" : undefined}
     >
       {items.map((item, index) => {

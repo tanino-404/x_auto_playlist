@@ -4,6 +4,7 @@
 // manual playlist. Never sends requests to X (design principle 7).
 
 import { extractPostId, findArticle } from "@/lib/context-target/extract";
+import { t } from "@/lib/i18n";
 import type { PostCache } from "@/lib/post-cache";
 import type { Store } from "@/lib/store";
 import { UI_HOST_NAME } from "@/shared/constants";
@@ -19,13 +20,14 @@ export interface ContextTarget {
   dispose(): void;
 }
 
+/** Toast texts, in the UI language at the time they are shown (F-60). */
 export const CONTEXT_MESSAGES = {
-  addedToEnd: (count: number) => `プレイリストに ${count} 件追加しました`,
-  addedNext: (count: number) => `次に再生する ${count} 件を追加しました`,
-  alreadyListed: "この投稿のメディアはすでにプレイリストにあります",
-  notCached: "この投稿の情報を取得できませんでした。ページを再読み込みしてください",
-  noMedia: "この投稿にはメディアがありません",
-  noTarget: "追加したい投稿の上で右クリックしてください",
+  addedToEnd: (count: number) => t("toast.context.addedToEnd", { count }),
+  addedNext: (count: number) => t("toast.context.addedNext", { count }),
+  alreadyListed: () => t("toast.context.alreadyListed"),
+  notCached: () => t("toast.context.notCached"),
+  noMedia: () => t("toast.context.noMedia"),
+  noTarget: () => t("toast.context.noTarget"),
 } as const;
 
 function isOwnUi(event: Event): boolean {
@@ -60,10 +62,10 @@ export function createContextTarget(deps: { store: Store; postCache: PostCache }
   const fail = (reason: Extract<AddResult, { ok: false }>["reason"]): AddResult => {
     const text =
       reason === "no-media"
-        ? CONTEXT_MESSAGES.noMedia
+        ? CONTEXT_MESSAGES.noMedia()
         : reason === "not-cached"
-          ? CONTEXT_MESSAGES.notCached
-          : CONTEXT_MESSAGES.noTarget;
+          ? CONTEXT_MESSAGES.notCached()
+          : CONTEXT_MESSAGES.noTarget();
     store.setNotice({ kind: "error", text });
     return { ok: false, reason };
   };
@@ -95,7 +97,7 @@ export function createContextTarget(deps: { store: Store; postCache: PostCache }
         kind: "info",
         text:
           added === 0
-            ? CONTEXT_MESSAGES.alreadyListed
+            ? CONTEXT_MESSAGES.alreadyListed()
             : position === "next"
               ? CONTEXT_MESSAGES.addedNext(added)
               : CONTEXT_MESSAGES.addedToEnd(added),

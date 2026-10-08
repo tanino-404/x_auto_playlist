@@ -33,6 +33,52 @@ function normalizePath(pathname: string): string {
   return trimmed === "" ? "/" : trimmed;
 }
 
+/**
+ * First path segments that are X's own pages, not user names (so `/explore` is not a profile).
+ * Compared in lower case. Paths handled earlier in `classify` (home, i, search) are listed too
+ * so the profile check stays safe on its own.
+ */
+const RESERVED_FIRST_SEGMENTS: ReadonlySet<string> = new Set([
+  "home",
+  "explore",
+  "notifications",
+  "messages",
+  "i",
+  "search",
+  "settings",
+  "compose",
+  "login",
+  "logout",
+  "signup",
+  "about",
+  "tos",
+  "privacy",
+  "jobs",
+  "hashtag",
+  "intent",
+  "share",
+  "account",
+  "download",
+  "lists",
+  "communities",
+  "bookmarks",
+  "topics",
+  "onboarding",
+  "premium",
+  "flow",
+  "rules",
+  "help",
+  "following",
+  "followers",
+]);
+
+/** X user names: 1-15 letters, digits or underscores. */
+const SCREEN_NAME_PATTERN = /^[A-Za-z0-9_]{1,15}$/;
+
+function isScreenName(segment: string): boolean {
+  return SCREEN_NAME_PATTERN.test(segment) && !RESERVED_FIRST_SEGMENTS.has(segment.toLowerCase());
+}
+
 function classify(segments: string[]): PageKind {
   const [first, second, third] = segments;
   if (first === undefined) {
@@ -65,6 +111,18 @@ function classify(segments: string[]): PageKind {
     }
     if (second === "media") {
       return "user-media";
+    }
+  }
+  // Profile tabs (F-61): /<user>, /<user>/with_replies, /<user>/reposts.
+  if (isScreenName(first)) {
+    if (segments.length === 1) {
+      return "user-posts";
+    }
+    if (segments.length === 2 && second === "with_replies") {
+      return "user-replies";
+    }
+    if (segments.length === 2 && second === "reposts") {
+      return "user-reposts";
     }
   }
   return "other";

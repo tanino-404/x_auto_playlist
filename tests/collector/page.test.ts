@@ -11,6 +11,13 @@ describe("operationToPageKinds", () => {
     ["UserVideoTimeline", ["user-media"]],
     ["UserPhotoTimeline", ["user-media"]],
     ["UserMedia", ["user-media"]],
+    ["UserOriginalsTimeline", ["user-posts"]],
+    ["UserTweets", ["user-posts"]],
+    ["UserHighlightsTweets", ["user-posts"]],
+    ["UserHighlightsTimeline", ["user-posts"]],
+    ["UserRepliesTimeline", ["user-replies"]],
+    ["UserTweetsAndReplies", ["user-replies"]],
+    ["UserRepostsTimeline", ["user-reposts"]],
     ["SearchTimeline", ["search"]],
     ["TweetDetail", ["status"]],
   ])("%s → %j", (operation, kinds) => {
@@ -23,7 +30,7 @@ describe("operationToPageKinds", () => {
     }
   });
 
-  it.each(["", "UserTweets", "toString", "__proto__", "hometimeline"])(
+  it.each(["", "UserRetweets", "UserReposts", "toString", "__proto__", "hometimeline"])(
     "unknown %j → []",
     (operation) => {
       expect(operationToPageKinds(operation)).toEqual([]);

@@ -3,6 +3,7 @@
 // home-timeline.json cases: ① video ② 4 photos ③ GIF ④ repost ⑤ quote
 // ⑥ TweetWithVisibilityResults ⑦ TweetTombstone ⑧ no media ⑨ note_tweet
 // ⑩ new/legacy author structures, plus an HLS-only video, two ads, TimelineShowAlert, cursors.
+// user-originals-timeline.json: profile posts tab (pinned post, two-video post, conversation module, repost, ad).
 // Real captures belong in ../real/ (git-ignored), never here.
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -415,4 +416,86 @@ write("add-to-module.json", {
     },
   },
 });
-console.log("wrote 4 synthetic fixtures");
+
+// ---------------------------------------------------------------------------------------------
+// user-originals-timeline.json (profile posts tab, UserOriginalsTimeline; F-61): pinned post, a post with two videos
+// (X leaves those out of the media tab), a conversation module, a repost and an ad.
+// ---------------------------------------------------------------------------------------------
+write("user-originals-timeline.json", {
+  data: {
+    user: {
+      result: {
+        __typename: "User",
+        timeline: {
+          timeline: {
+            instructions: [
+              { type: "TimelineClearCache" },
+              {
+                type: "TimelinePinEntry",
+                entry: entry(
+                  "tweet-5001",
+                  tweet("5001", alice, "pinned video", [video("7_50001", 50001)]),
+                  1000,
+                ),
+              },
+              {
+                type: "TimelineAddEntries",
+                entries: [
+                  // two videos in one post
+                  entry(
+                    "tweet-5002",
+                    tweet("5002", alice, "two videos", [
+                      video("7_50021", 50021),
+                      video("7_50022", 50022),
+                    ]),
+                    999,
+                  ),
+                  // conversation module: alice's thread, the second post has a photo
+                  {
+                    entryId: "profile-conversation-5003",
+                    sortIndex: "998",
+                    content: {
+                      entryType: "TimelineTimelineModule",
+                      __typename: "TimelineTimelineModule",
+                      displayType: "VerticalConversation",
+                      items: [
+                        moduleItem(
+                          "profile-conversation-5003-tweet-5003",
+                          tweet("5003", alice, "thread start", null),
+                        ),
+                        moduleItem(
+                          "profile-conversation-5003-tweet-5004",
+                          tweet("5004", alice, "thread photo", [photo("3_50041", "p50041.jpg")]),
+                        ),
+                      ],
+                    },
+                  },
+                  // repost by alice of bob's video post
+                  entry(
+                    "tweet-5005",
+                    tweet("5005", alice, "RT @bob: reposted video", null, {
+                      legacy: {
+                        retweeted_status_result: {
+                          result: tweet("5050", bob, "reposted video", [video("7_50051", 50051)]),
+                        },
+                      },
+                    }),
+                    997,
+                  ),
+                  promoted(
+                    "promoted-tweet-5099-bb",
+                    tweet("5099", carol, "ad", [video("13_50099", 50099)]),
+                    996,
+                  ),
+                  cursor("Top", 995),
+                  cursor("Bottom", 994),
+                ],
+              },
+            ],
+          },
+        },
+      },
+    },
+  },
+});
+console.log("wrote 5 synthetic fixtures");

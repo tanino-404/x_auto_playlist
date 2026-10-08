@@ -18,7 +18,7 @@ With X still open, a playlist panel appears on the right side of the page and th
 
 ### Builds a playlist automatically
 
-Every video and image on the page you are viewing (Home, Bookmarks, Likes, a user's media tab, search results) is added to the playlist for you. When playback gets close to the end of the list, the page scrolls a little at a time to load more.
+Every video and image on the page you are viewing (Home, Bookmarks, Likes, a user's Posts / Replies / Reposts / Media tabs, search results) is added to the playlist for you. When playback gets close to the end of the list, the page scrolls a little at a time to load more.
 
 ### Lets you build your own playlist
 
@@ -60,6 +60,7 @@ Open them from the gear icon at the top right of the panel.
 
 | Setting | What it does |
 |---|---|
+| Language | Language of the panel and player: Auto (follows the browser), 日本語, or English. |
 | Playlist mode | "Auto" collects from the page you are viewing. "Manual" uses only the items you added by right-clicking. |
 | Theme | Look of the panel and player: light, dark, or follow the system. |
 | Include images | Turn off to collect videos only. |
@@ -68,7 +69,7 @@ Open them from the gear icon at the top right of the panel.
 | Thumbnail hover preview | When on, hovering a thumbnail plays its first seconds. Turn off to save bandwidth. |
 | Prefetch | Loads the next video ahead of time to cut the gap between videos: off, next item, or previous and next. |
 | Auto-scroll | In auto mode, scrolls the page to load more posts when the list is nearly finished. |
-| Auto-scroll pace | How often it scrolls. "Slow" is the safe choice. |
+| Auto-scroll pace | How often it scrolls: slow, normal, or fast. Faster paces load more quickly but raise the chance that X temporarily limits loading. |
 | Default volume | Volume when the extension starts. |
 | Default repeat | Repeat mode when the extension starts: all, one, or off. |
 | Pause X's videos while playing | Stops the videos that autoplay in the X timeline while the player is running. |

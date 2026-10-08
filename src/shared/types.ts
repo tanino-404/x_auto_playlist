@@ -103,7 +103,8 @@ export interface PlaybackState {
 
 export type Theme = "light" | "dark" | "system";
 export type Prefetch = "off" | "next" | "both";
-export type ScrollPace = "slow" | "normal";
+/** v1.1: "fast" added at the host's request (accepts a higher chance of X rate limiting). */
+export type ScrollPace = "slow" | "normal" | "fast";
 export type PlayedHandling = "keep" | "dim" | "remove";
 
 /** Settings S-01..S-18 (docs/requirements.md §5). */
@@ -128,6 +129,8 @@ export interface Settings {
   playedHandling: PlayedHandling;
   /** S-20: show like / bookmark / repost buttons in the player and allow sending them. */
   postActions: boolean;
+  /** S-21 (v1.1): UI language. */
+  language: Language;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -139,7 +142,7 @@ export const DEFAULT_SETTINGS: Settings = {
   hoverPreview: true,
   prefetch: "next",
   autoScroll: true,
-  scrollPace: "slow",
+  scrollPace: "normal",
   defaultVolume: 0.5,
   defaultLoop: "all",
   pauseSiteVideos: true,
@@ -147,6 +150,7 @@ export const DEFAULT_SETTINGS: Settings = {
   hotkeys: true,
   playedHandling: "dim",
   postActions: true,
+  language: "auto",
 };
 
 /** Persisted UI preferences (chrome.storage.local). */
@@ -167,6 +171,13 @@ export type PageKind =
   | "bookmarks"
   | "likes"
   | "user-media"
+  /** A user's profile: posts tab (`/<user>`), replies (`/<user>/with_replies`), reposts tab. v1.1 */
+  | "user-posts"
+  | "user-replies"
+  | "user-reposts"
   | "search"
   | "status"
   | "other";
+
+/** UI language (v1.1). "auto" follows the browser language (ja → Japanese, otherwise English). */
+export type Language = "auto" | "ja" | "en";

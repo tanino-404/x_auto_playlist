@@ -1,6 +1,7 @@
 // Seek bar: buffered range (faint), played range (--xap-accent), hover time tooltip,
 // click / drag to seek. With `disabled` it is a read-only progress bar.
 import { useRef, useState } from "preact/hooks";
+import { t } from "@/lib/i18n";
 import { formatTime } from "@/lib/player/logic";
 import { SEEK_STEP_SECONDS } from "@/shared/constants";
 import "@/ui/components/components.css";
@@ -24,7 +25,7 @@ export function SeekBar({
   duration,
   buffered,
   onSeek,
-  label = "シークバー",
+  label = t("seek.label"),
   disabled = false,
 }: SeekBarProps) {
   const barRef = useRef<HTMLDivElement>(null);

@@ -87,6 +87,41 @@ describe("createCollectorPipeline", () => {
     expect(postCache.size()).toBe(10);
   });
 
+  it("profile posts tab: UserOriginalsTimeline is appended on user-posts (F-61)", () => {
+    const { handle, added } = setup({ url: "https://x.com/alice" });
+    handle(response("UserOriginalsTimeline", loadFixture("user-originals-timeline.json")));
+    expect(added).toHaveLength(1);
+    expect(added[0]?.target).toBe("auto");
+    expect(ids(added[0]?.items ?? [])).toEqual([
+      "7_50001",
+      "7_50021",
+      "7_50022",
+      "3_50041",
+      "7_50051",
+    ]);
+  });
+
+  it.each([
+    ["https://x.com/alice", "UserTweets"],
+    ["https://x.com/alice/with_replies", "UserRepliesTimeline"],
+    ["https://x.com/alice/with_replies", "UserTweetsAndReplies"],
+    ["https://x.com/alice/reposts", "UserRepostsTimeline"],
+  ])("profile tab %s accepts %s", (url, operation) => {
+    const { handle, added } = setup({ url });
+    handle(response(operation, loadFixture("user-originals-timeline.json")));
+    expect(added).toHaveLength(1);
+  });
+
+  it.each([
+    ["https://x.com/alice", "UserRepliesTimeline"],
+    ["https://x.com/alice", "UserRepostsTimeline"],
+    ["https://x.com/alice/reposts", "UserOriginalsTimeline"],
+  ])("profile tab %s does not accept %s", (url, operation) => {
+    const { handle, added } = setup({ url });
+    handle(response(operation, loadFixture("user-originals-timeline.json")));
+    expect(added).toEqual([]);
+  });
+
   it("follows page changes", () => {
     const { handle, added, current } = setup({ url: "https://x.com/home" });
     handle(response("Bookmarks", loadFixture("bookmarks.json")));

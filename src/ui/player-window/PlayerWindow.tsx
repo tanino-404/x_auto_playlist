@@ -4,6 +4,7 @@
 // auto-hides.
 import type { RefObject } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
+import { type MessageKey, t } from "@/lib/i18n";
 import type { Player } from "@/lib/player";
 import { formatSpeed, formatTime, listResolutions } from "@/lib/player/logic";
 import type { Store } from "@/lib/store";
@@ -23,7 +24,7 @@ import {
   PrevIcon,
   ShuffleIcon,
 } from "@/ui/components/icons";
-import { LOOP_LABELS, SHUFFLE_LABEL } from "@/ui/components/labels";
+import { loopLabel, shuffleLabel } from "@/ui/components/labels";
 import { Menu } from "@/ui/components/Menu";
 import { SeekBar } from "@/ui/components/SeekBar";
 import { VolumeControl } from "@/ui/components/VolumeControl";
@@ -58,10 +59,10 @@ const CLICK_DELAY_MS = 220;
 
 const SPEED_MENU = SPEED_OPTIONS.map((value) => ({ value, label: formatSpeed(value) }));
 
-const QUALITY_PRESET_LABELS: Record<QualityPreset, string> = {
-  auto: "自動",
-  highest: "最高",
-  lowest: "最低",
+const QUALITY_PRESET_LABELS: Record<QualityPreset, MessageKey> = {
+  auto: "player.quality.auto",
+  highest: "player.quality.highest",
+  lowest: "player.quality.lowest",
 };
 
 /** Quality menu value: "auto" or an explicit resolution ("p"). */
@@ -87,12 +88,13 @@ function qualityMenu(
   value: QualityMenuValue;
   text: string;
 } {
+  const auto = t("player.quality.auto");
   const options: { value: QualityMenuValue; label: string }[] = [
-    { value: "auto", label: resolvedLabel ? `自動 · ${resolvedLabel}` : "自動" },
+    { value: "auto", label: resolvedLabel ? `${auto} · ${resolvedLabel}` : auto },
     ...resolutions.map((height) => ({ value: height, label: `${height}p` })),
   ];
   if (quality === "auto") {
-    return { options, value: "auto", text: resolvedLabel ? `自動 ${resolvedLabel}` : "自動" };
+    return { options, value: "auto", text: resolvedLabel ? `${auto} ${resolvedLabel}` : auto };
   }
   const resolved = parseResolvedHeight(resolvedLabel);
   const explicit = typeof quality === "object" ? quality.height : null;
@@ -100,7 +102,7 @@ function qualityMenu(
   const text =
     typeof quality === "object"
       ? (resolvedLabel ?? `${quality.height}p`)
-      : `${QUALITY_PRESET_LABELS[quality]}${resolvedLabel ? ` ${resolvedLabel}` : ""}`;
+      : `${t(QUALITY_PRESET_LABELS[quality])}${resolvedLabel ? ` ${resolvedLabel}` : ""}`;
   return { options, value, text };
 }
 
@@ -376,12 +378,12 @@ export function PlayerWindow({ store, player, rootRef, leaving = false }: Player
   };
 
   const playing = status === "playing";
-  const playLabel = playing ? "一時停止" : "再生";
-  const fullscreenLabel = isFullscreen ? "全画面を終了" : "全画面";
+  const playLabel = playing ? t("transport.pause") : t("transport.play");
+  const fullscreenLabel = isFullscreen ? t("player.fullscreen.exit") : t("player.fullscreen");
   // F-4F: the panel lives inside .xap-root (the fullscreen element), so it can be shown or
   // hidden without leaving fullscreen; the fullscreen rect above follows panelWidth.
   const panelOpen = store.panelOpen.value;
-  const panelLabel = panelOpen ? "プレイリストを隠す" : "プレイリストを表示";
+  const panelLabel = panelOpen ? t("player.panel.hide") : t("player.panel.show");
   const qualityMenuState = qualityMenu(
     quality,
     item !== null && item.kind !== "photo" ? listResolutions(item.sources) : [],
@@ -407,7 +409,7 @@ export function PlayerWindow({ store, player, rootRef, leaving = false }: Player
         <span class="xap-player__title">
           {item ? `@${item.author.screenName}` : "X Auto Playlist"}
         </span>
-        <IconButton label="閉じる" onClick={onClose}>
+        <IconButton label={t("player.close")} onClick={onClose}>
           <CloseIcon size={16} />
         </IconButton>
       </div>
@@ -417,7 +419,7 @@ export function PlayerWindow({ store, player, rootRef, leaving = false }: Player
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: see above. */}
       <div class="xap-player__stage" onClick={onStageClick} onDblClick={onStageDblClick}>
         <div class="xap-player__media" ref={mediaRef} />
-        {awaitingMore && <div class="xap-player__notice">次の動画を読み込み中…</div>}
+        {awaitingMore && <div class="xap-player__notice">{t("player.loadingNext")}</div>}
         {lastError !== null && (
           <div class="xap-player__error" role="status">
             {lastError}
@@ -435,22 +437,22 @@ export function PlayerWindow({ store, player, rootRef, leaving = false }: Player
             duration={total}
             buffered={bufferedEnd}
             onSeek={(seconds) => player.seek(seconds)}
-            label={timed ? "表示時間" : "シークバー"}
+            label={timed ? t("seek.displayTime") : t("seek.label")}
             disabled={timed}
           />
         </div>
         <div class="xap-player__controls">
-          <IconButton label="前へ" onClick={() => player.prev()}>
+          <IconButton label={t("transport.prev")} onClick={() => player.prev()}>
             <PrevIcon />
           </IconButton>
           <IconButton label={playLabel} onClick={() => player.togglePlay()}>
             {playing ? <PauseIcon size={20} /> : <PlayIcon size={20} />}
           </IconButton>
-          <IconButton label="次へ" onClick={() => player.next()}>
+          <IconButton label={t("transport.next")} onClick={() => player.next()}>
             <NextIcon />
           </IconButton>
           <IconButton
-            label={LOOP_LABELS[loop]}
+            label={loopLabel(loop)}
             onClick={() => player.cycleLoop()}
             active={loop !== "off"}
             class="xap-player__loop-btn"
@@ -458,7 +460,7 @@ export function PlayerWindow({ store, player, rootRef, leaving = false }: Player
             <LoopIcon one={loop === "one"} />
           </IconButton>
           <IconButton
-            label={SHUFFLE_LABEL}
+            label={shuffleLabel()}
             onClick={() => player.toggleShuffle()}
             pressed={shuffle}
             class="xap-player__shuffle-btn"
@@ -478,7 +480,7 @@ export function PlayerWindow({ store, player, rootRef, leaving = false }: Player
             barWidth={56}
           />
           <Menu
-            label="再生速度"
+            label={t("player.speed")}
             buttonText={formatSpeed(speed)}
             triggerClass="xap-player__speed"
             options={SPEED_MENU}
@@ -486,7 +488,7 @@ export function PlayerWindow({ store, player, rootRef, leaving = false }: Player
             onSelect={(value) => player.setSpeed(value)}
           />
           <Menu
-            label="画質"
+            label={t("player.quality")}
             buttonText={qualityMenuState.text}
             triggerClass="xap-player__quality"
             options={qualityMenuState.options}
@@ -494,7 +496,7 @@ export function PlayerWindow({ store, player, rootRef, leaving = false }: Player
             onSelect={(value) => player.setQuality(value === "auto" ? "auto" : { height: value })}
           />
           <IconButton
-            label="ピクチャ・イン・ピクチャ"
+            label={t("player.pip")}
             onClick={() => void player.togglePictureInPicture()}
             disabled={item?.kind === "photo"}
             class="xap-player__pip-btn"

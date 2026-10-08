@@ -1,7 +1,9 @@
-// Settings screen shown inside the side panel (F-15, requirements §5 S-01..S-20).
+// Settings screen shown inside the side panel (F-15, requirements §5 S-01..S-21).
+// Labels come from the i18n dictionary (F-60); the language row (S-21) is first.
 // Reads and writes store.settings directly; persistence is handled by the store.
 // Every row carries data-setting="<Settings key>" for the audit.
 import type { ComponentChildren } from "preact";
+import { type MessageKey, t } from "@/lib/i18n";
 import type { Store } from "@/lib/store";
 import type { Settings } from "@/shared/types";
 import { ChevronLeftIcon } from "@/ui/components/icons";
@@ -19,57 +21,39 @@ type ToggleKey = {
   [K in keyof Settings]: Settings[K] extends boolean ? K : never;
 }[keyof Settings];
 
-interface Choice<V extends string> {
-  value: V;
-  label: string;
-}
-
-const CHOICES: { [K in ChoiceKey]: ReadonlyArray<Choice<Settings[K]>> } = {
-  mode: [
-    { value: "auto", label: "自動" },
-    { value: "manual", label: "手動" },
-  ],
-  theme: [
-    { value: "light", label: "ライト" },
-    { value: "dark", label: "ダーク" },
-    { value: "system", label: "システムに従う" },
-  ],
-  defaultQuality: [
-    { value: "auto", label: "自動" },
-    { value: "highest", label: "最高" },
-    { value: "lowest", label: "最低" },
-  ],
-  prefetch: [
-    { value: "off", label: "オフ" },
-    { value: "next", label: "次の 1 件" },
-    { value: "both", label: "前後 1 件" },
-  ],
-  scrollPace: [
-    { value: "slow", label: "ゆっくり" },
-    { value: "normal", label: "普通" },
-  ],
-  defaultLoop: [
-    { value: "all", label: "すべて" },
-    { value: "one", label: "1 件" },
-    { value: "off", label: "なし" },
-  ],
-  playedHandling: [
-    { value: "keep", label: "残す" },
-    { value: "dim", label: "薄く表示" },
-    { value: "remove", label: "自動で消す" },
-  ],
+/**
+ * Values offered per choice setting, in display order. Labels come from the dictionary as
+ * "settings.<key>.<value>" (F-60), so they follow the UI language.
+ */
+const CHOICES: { [K in ChoiceKey]: ReadonlyArray<Settings[K]> } = {
+  language: ["auto", "ja", "en"],
+  mode: ["auto", "manual"],
+  theme: ["light", "dark", "system"],
+  defaultQuality: ["auto", "highest", "lowest"],
+  prefetch: ["off", "next", "both"],
+  scrollPace: ["slow", "normal", "fast"],
+  defaultLoop: ["all", "one", "off"],
+  playedHandling: ["keep", "dim", "remove"],
 };
 
-const HOTKEYS: ReadonlyArray<readonly [string, string]> = [
-  ["Space", "再生／停止"],
-  ["← →", "5 秒戻る／進む"],
-  ["Shift + ← →", "前／次"],
-  ["↑ ↓", "音量"],
-  ["F", "全画面"],
-  ["M", "ミュート"],
-  ["L", "ループ"],
-  ["S", "シャッフル"],
-  ["P", "ピクチャ・イン・ピクチャ"],
+function choiceLabel(key: ChoiceKey, value: string): string {
+  return t(`settings.${key}.${value}` as MessageKey);
+}
+
+function settingLabel(key: keyof Settings): string {
+  return t(`settings.${key}.label` as MessageKey);
+}
+
+const HOTKEYS: ReadonlyArray<readonly [string, MessageKey]> = [
+  ["Space", "settings.hotkeys.playPause"],
+  ["← →", "settings.hotkeys.seek"],
+  ["Shift + ← →", "settings.hotkeys.prevNext"],
+  ["↑ ↓", "settings.hotkeys.volume"],
+  ["F", "settings.hotkeys.fullscreen"],
+  ["M", "settings.hotkeys.mute"],
+  ["L", "settings.hotkeys.loop"],
+  ["S", "settings.hotkeys.shuffle"],
+  ["P", "settings.hotkeys.pip"],
 ];
 
 function clampInt(value: number, min: number, max: number): number {
@@ -106,35 +90,38 @@ export function SettingsView({ store, onBack }: SettingsViewProps) {
   const update = (patch: Partial<Settings>) => store.updateSettings(patch);
   const id = (key: keyof Settings) => `xap-setting-${key}`;
 
-  const select = <K extends ChoiceKey>(key: K, label: string, disabled?: boolean) => (
-    <Row setting={key} label={label} htmlFor={id(key)} disabled={disabled}>
-      <select
-        id={id(key)}
-        class="xap-settings__select"
-        aria-label={label}
-        disabled={disabled}
-        value={settings[key]}
-        onChange={(event) => {
-          const value = (event.currentTarget as HTMLSelectElement).value;
-          const choice = CHOICES[key].find((candidate) => candidate.value === value);
-          if (choice !== undefined) {
-            update({ [key]: choice.value } as Partial<Settings>);
-          }
-        }}
-      >
-        {CHOICES[key].map((choice) => (
-          <option key={choice.value} value={choice.value}>
-            {choice.label}
-          </option>
-        ))}
-      </select>
-    </Row>
-  );
+  const select = <K extends ChoiceKey>(key: K, disabled?: boolean) => {
+    const label = settingLabel(key);
+    return (
+      <Row setting={key} label={label} htmlFor={id(key)} disabled={disabled}>
+        <select
+          id={id(key)}
+          class="xap-settings__select"
+          aria-label={label}
+          disabled={disabled}
+          value={settings[key]}
+          onChange={(event) => {
+            const value = (event.currentTarget as HTMLSelectElement).value;
+            const choice = CHOICES[key].find((candidate) => candidate === value);
+            if (choice !== undefined) {
+              update({ [key]: choice } as Partial<Settings>);
+            }
+          }}
+        >
+          {CHOICES[key].map((choice) => (
+            <option key={choice} value={choice}>
+              {choiceLabel(key, choice)}
+            </option>
+          ))}
+        </select>
+      </Row>
+    );
+  };
 
   const toggle = (
     key: ToggleKey,
-    label: string,
     note?: ComponentChildren,
+    label: string = settingLabel(key),
     ariaLabel: string = label,
   ) => (
     <Row setting={key} label={label} htmlFor={id(key)} note={note}>
@@ -155,10 +142,10 @@ export function SettingsView({ store, onBack }: SettingsViewProps) {
 
   const range = (
     key: "imageDurationSec" | "defaultVolume",
-    label: string,
     opts: { min: number; max: number; step: number; unit: string; disabled?: boolean },
   ) => {
     // defaultVolume is stored as 0..1 but edited as 0..100 %.
+    const label = settingLabel(key);
     const scale = key === "defaultVolume" ? 100 : 1;
     const shown = Math.round(settings[key] * scale);
     const commit = (raw: number) => {
@@ -184,7 +171,7 @@ export function SettingsView({ store, onBack }: SettingsViewProps) {
         <input
           type="number"
           class="xap-settings__number"
-          aria-label={`${label}（数値）`}
+          aria-label={t("settings.numberInput", { label })}
           min={opts.min}
           max={opts.max}
           step={opts.step}
@@ -208,55 +195,55 @@ export function SettingsView({ store, onBack }: SettingsViewProps) {
         <button
           type="button"
           class="xap-settings__back"
-          aria-label="一覧に戻る"
-          title="一覧に戻る"
+          aria-label={t("settings.back.label")}
+          title={t("settings.back.label")}
           onClick={onBack}
         >
           <ChevronLeftIcon size={16} />
-          戻る
+          {t("settings.back")}
         </button>
-        <span class="xap-settings__title">設定</span>
+        <span class="xap-settings__title">{t("settings.title")}</span>
       </div>
       <div class="xap-settings__list">
-        {select("mode", "プレイリストモード")}
-        {select("theme", "テーマ")}
-        {toggle("includeImages", "画像を含める")}
-        {range("imageDurationSec", "画像の表示時間", {
+        {select("language")}
+        {select("mode")}
+        {select("theme")}
+        {toggle("includeImages")}
+        {range("imageDurationSec", {
           min: 1,
           max: 20,
           step: 1,
-          unit: "秒",
+          unit: t("settings.unit.seconds"),
           disabled: !settings.includeImages,
         })}
-        {select("defaultQuality", "標準の画質")}
-        {toggle("hoverPreview", "サムネイルのホバー再生")}
-        {select("prefetch", "先読み")}
-        {toggle("autoScroll", "自動スクロール")}
-        {select("scrollPace", "自動スクロールの速さ", !settings.autoScroll)}
-        {range("defaultVolume", "既定の音量", { min: 0, max: 100, step: 5, unit: "%" })}
-        {select("defaultLoop", "既定のループ")}
-        {toggle("pauseSiteVideos", "再生中は X の動画を止める")}
-        {toggle("dedupe", "重複メディアを除外")}
+        {select("defaultQuality")}
+        {toggle("hoverPreview")}
+        {select("prefetch")}
+        {toggle("autoScroll")}
+        {select("scrollPace", !settings.autoScroll)}
+        {range("defaultVolume", { min: 0, max: 100, step: 5, unit: "%" })}
+        {select("defaultLoop")}
+        {toggle("pauseSiteVideos")}
+        {toggle("dedupe")}
         {toggle(
           "hotkeys",
-          "キーボードショートカット",
-          <dl class="xap-settings__keys" aria-label="ショートカットの割り当て">
+          <dl class="xap-settings__keys" aria-label={t("settings.hotkeys.list")}>
             {HOTKEYS.map(([key, action]) => (
               <div key={key} class="xap-settings__key-row">
                 <dt>
                   <kbd>{key}</kbd>
                 </dt>
-                <dd>{action}</dd>
+                <dd>{t(action)}</dd>
               </div>
             ))}
           </dl>,
         )}
-        {select("playedHandling", "再生済み項目の扱い")}
+        {select("playedHandling")}
         {toggle(
           "postActions",
-          "再生ウィンドウからの投稿操作（いいね／リポスト）",
-          "いいね・リポストのボタンを出します。押したときだけ X に送信します。",
-          "再生ウィンドウからの投稿操作",
+          t("settings.postActions.note"),
+          t("settings.postActions.label"),
+          t("settings.postActions.aria"),
         )}
       </div>
     </div>

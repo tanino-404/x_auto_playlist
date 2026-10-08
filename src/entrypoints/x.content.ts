@@ -36,7 +36,7 @@ export default defineContentScript({
     listenInterceptedResponses(createCollectorPipeline({ store, postCache, navigation }));
 
     // Auto-scroll while playing (auto mode only), honouring X's rate limits.
-    const scroller = createScroller({ store, navigation });
+    const scroller = createScroller({ store, navigation, player });
 
     // Right-click "add to playlist": remembers the element under the pointer and resolves
     // the post from the post cache when the service worker relays the menu click.

@@ -3,7 +3,11 @@
 // (up to half the video height, scrollable) with the full text and a link to the original
 // post. Playback continues meanwhile. Both also carry the like / repost buttons
 // (F-4C) unless settings.postActions is off.
+// F-63: in both states the like / repost buttons sit just left of the 全文 / 閉じる button on
+// the author row (right-aligned), the text uses the full width of the dark background and keeps
+// the post's line breaks, and the author links to their profile (same tab).
 import { useContext } from "preact/hooks";
+import { type MessageKey, t } from "@/lib/i18n";
 import { type PostAction, pendingKey } from "@/lib/post-actions";
 import { PostActionsContext } from "@/lib/post-actions/context";
 import type { PlaylistItem, PostFlags } from "@/shared/types";
@@ -21,9 +25,35 @@ export interface MediaInfoProps {
   onExpandedChange: (expanded: boolean) => void;
 }
 
+function profileUrl(screenName: string): string {
+  return `https://x.com/${encodeURIComponent(screenName)}`;
+}
+
+/**
+ * Same-tab navigation to the author's profile (F-63). The whole page navigates, so leave
+ * fullscreen first (best effort); the link's default action then performs the navigation.
+ */
+function onAuthorClick(event: MouseEvent) {
+  if (document.fullscreenElement === null) {
+    return;
+  }
+  // Let the browser leave fullscreen before the page goes away; navigate whatever happens.
+  event.preventDefault();
+  const href = (event.currentTarget as HTMLAnchorElement).href;
+  const go = () => window.location.assign(href);
+  document.exitFullscreen().then(go, go);
+}
+
 function Author({ item }: { item: PlaylistItem }) {
   return (
-    <div class="xap-info__author">
+    <a
+      class="xap-info__author"
+      href={profileUrl(item.author.screenName)}
+      aria-label={t("info.author")}
+      data-xap-author-link="true"
+      // Not inside the media element, so the stage does not treat it as a play toggle.
+      onClick={onAuthorClick}
+    >
       {item.author.avatarUrl ? (
         <img class="xap-info__avatar" src={item.author.avatarUrl} alt="" />
       ) : (
@@ -31,23 +61,23 @@ function Author({ item }: { item: PlaylistItem }) {
       )}
       <span class="xap-info__name">{item.author.name}</span>
       <span class="xap-info__screen-name">@{item.author.screenName}</span>
-    </div>
+    </a>
   );
 }
 
 interface PostActionSpec {
   action: PostAction;
   flag: keyof PostFlags;
-  labels: [off: string, on: string];
+  labels: [off: MessageKey, on: MessageKey];
   Icon: typeof HeartIcon;
 }
 
 const POST_ACTION_SPECS: readonly PostActionSpec[] = [
-  { action: "like", flag: "favorited", labels: ["いいね", "いいねを取り消す"], Icon: HeartIcon },
+  { action: "like", flag: "favorited", labels: ["info.like", "info.unlike"], Icon: HeartIcon },
   {
     action: "repost",
     flag: "retweeted",
-    labels: ["リポスト", "リポストを取り消す"],
+    labels: ["info.repost", "info.unrepost"],
     Icon: RepostIcon,
   },
 ];
@@ -68,7 +98,7 @@ function PostActionButtons({ item }: { item: PlaylistItem }) {
       {POST_ACTION_SPECS.map(({ action, flag, labels, Icon }) => {
         const on = item.post?.[flag] === true;
         const busy = pending.has(pendingKey(item.postId, action));
-        const label = labels[on ? 1 : 0];
+        const label = t(labels[on ? 1 : 0]);
         return (
           <button
             key={action}
@@ -96,16 +126,28 @@ function PostActionButtons({ item }: { item: PlaylistItem }) {
 export function MediaInfo({ item, expanded, onExpandedChange }: MediaInfoProps) {
   if (expanded) {
     // Bottom sheet: grows up from the bottom of the video with the text (capped by CSS at half
-    // the video height, then scrolls). The close button sits where the 全文 button was, away
-    // from the title bar's window close button.
+    // the video height, then the text scrolls under a fixed author row). The author row is laid
+    // out like the collapsed bar's, so the buttons keep their place next to 閉じる.
     return (
-      <div class="xap-info-sheet" role="dialog" aria-label="ポストの全文">
-        <div class="xap-info-sheet__scroll">
-          <div class="xap-info-sheet__header">
-            <Author item={item} />
+      <div class="xap-info-sheet" role="dialog" aria-label={t("info.sheet")}>
+        <div class="xap-info__head xap-info-sheet__header">
+          <Author item={item} />
+          <div class="xap-info__buttons">
             <PostActionButtons item={item} />
+            <button
+              type="button"
+              class="xap-info__toggle xap-info-sheet__close"
+              aria-label={t("info.collapse.label")}
+              title={t("info.collapse.label")}
+              onClick={() => onExpandedChange(false)}
+            >
+              <ChevronDownIcon size={16} />
+              {t("info.collapse")}
+            </button>
           </div>
-          <p class="xap-info-sheet__text">{item.text}</p>
+        </div>
+        <div class="xap-info-sheet__scroll">
+          {item.text && <p class="xap-info-sheet__text">{item.text}</p>}
           {item.postUrl && (
             <a
               class="xap-info-sheet__link"
@@ -114,41 +156,33 @@ export function MediaInfo({ item, expanded, onExpandedChange }: MediaInfoProps) 
               rel="noopener noreferrer"
             >
               <ExternalIcon size={14} />
-              元ポストを開く
+              {t("info.openPost")}
             </a>
           )}
         </div>
-        <button
-          type="button"
-          class="xap-info__toggle xap-info-sheet__close"
-          aria-label="全文を閉じる"
-          title="全文を閉じる"
-          onClick={() => onExpandedChange(false)}
-        >
-          <ChevronDownIcon size={16} />
-          閉じる
-        </button>
       </div>
     );
   }
 
   return (
     <div class="xap-info">
-      <div class="xap-info__main">
+      <div class="xap-info__head">
         <Author item={item} />
-        {item.text && <p class="xap-info__text">{item.text}</p>}
+        <div class="xap-info__buttons">
+          <PostActionButtons item={item} />
+          <button
+            type="button"
+            class="xap-info__toggle"
+            aria-label={t("info.expand.label")}
+            title={t("info.expand.label")}
+            onClick={() => onExpandedChange(true)}
+          >
+            <ChevronUpIcon size={16} />
+            {t("info.expand")}
+          </button>
+        </div>
       </div>
-      <PostActionButtons item={item} />
-      <button
-        type="button"
-        class="xap-info__toggle"
-        aria-label="全文を表示"
-        title="全文を表示"
-        onClick={() => onExpandedChange(true)}
-      >
-        <ChevronUpIcon size={16} />
-        全文
-      </button>
+      {item.text && <p class="xap-info__text">{item.text}</p>}
     </div>
   );
 }

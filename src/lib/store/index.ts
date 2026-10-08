@@ -2,6 +2,7 @@
 
 import type { ReadonlySignal, Signal } from "@preact/signals";
 import { batch, computed, effect, signal, untracked } from "@preact/signals";
+import { initI18n, t } from "@/lib/i18n";
 import type { CollectorStatus, RateLimitState } from "@/lib/store/collector-state";
 import { INITIAL_RATE_LIMIT, nextRateLimit } from "@/lib/store/collector-state";
 import { clampPanelWidth, mergeSettings, mergeUiPrefs } from "@/lib/store/merge";
@@ -392,7 +393,7 @@ export async function initStore(): Promise<Store> {
       const added = playlist.value.manual.items.length > before;
       store.setNotice({
         kind: "info",
-        text: added ? "手動プレイリストに追加しました" : "手動プレイリストに追加済みです",
+        text: added ? t("toast.manual.added") : t("toast.manual.already"),
       });
     },
     removePlayed,
@@ -452,5 +453,7 @@ export async function initStore(): Promise<Store> {
       });
     },
   };
+  // F-60: the UI language follows settings.language from here on.
+  initI18n(store);
   return store;
 }

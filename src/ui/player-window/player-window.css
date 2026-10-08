@@ -146,8 +146,8 @@
   bottom: 0;
   z-index: 1;
   display: flex;
-  align-items: flex-end;
-  gap: var(--xap-space-2);
+  flex-direction: column;
+  gap: 2px;
   padding: 28px var(--xap-space-3) var(--xap-space-2);
   /* Legibility scrim for text over video (functional, not decoration). */
   background: linear-gradient(
@@ -160,20 +160,40 @@
   cursor: default;
 }
 
-.xap-info__main {
-  flex: 1 1 auto;
-  min-width: 0;
+/* Author row (F-63): author on the left, the like / repost buttons and 全文 / 閉じる as one
+   right-aligned group. Same layout collapsed and expanded, so the buttons never move. */
+.xap-info__head {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: var(--xap-space-2);
+  min-width: 0;
 }
 
+/* Link to the author's profile (same tab). */
 .xap-info__author {
+  flex: 0 1 auto;
   display: flex;
   align-items: center;
   gap: var(--xap-space-1);
   min-width: 0;
+  border-radius: var(--xap-radius-xs);
+  color: inherit;
   font-size: var(--xap-text-sm);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.xap-info__author:focus-visible {
+  outline: 2px solid var(--xap-focus);
+  outline-offset: 1px;
+}
+
+.xap-info__buttons {
+  flex: none;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--xap-space-1);
 }
 
 .xap-info__avatar {
@@ -202,16 +222,22 @@
   min-width: 0;
 }
 
+.xap-info__author:hover .xap-info__name {
+  text-decoration: underline;
+}
+
 .xap-info__text {
   margin: 0;
   font-size: var(--xap-text-sm);
   line-height: 1.4;
   color: rgba(255, 255, 255, 0.92);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  /* Two lines, keeping the post's own line breaks (line-clamp needs -webkit-box). */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
@@ -249,9 +275,9 @@
 }
 
 /* Full text (F-42): a bottom sheet that grows up from the bottom edge of the video with its
-   content, capped at half the video height (then the text scrolls inside). The upper half of
-   the picture stays visible. The close button takes the 全文 button's place (bottom right),
-   well away from the title bar's window close button. */
+   content, capped at half the video height (then the text scrolls under the author row). The
+   upper half of the picture stays visible. The author row matches the collapsed bar's, so the
+   like / repost buttons stay just left of 閉じる (F-63). */
 .xap-info-sheet {
   position: absolute;
   left: 0;
@@ -283,28 +309,20 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  /* Right padding keeps the text clear of the close button. */
-  padding: 10px 88px 10px var(--xap-space-3);
+  /* The text spans the sheet's full width (F-63). */
+  padding: 0 var(--xap-space-3) 10px;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
 }
 
-.xap-info-sheet__close {
-  position: absolute;
-  right: var(--xap-space-3);
-  bottom: var(--xap-space-2);
-}
-
 .xap-info-sheet__header {
-  display: flex;
-  align-items: center;
-  gap: var(--xap-space-2);
-  min-width: 0;
+  flex: none;
+  padding: 10px var(--xap-space-3) 6px;
 }
 
 .xap-info-sheet__text {
   margin: 0;
-  max-width: 62ch;
+  /* No max-width: a 62ch cap made the text wrap after ~20-30 CJK characters in fullscreen. */
   font-size: var(--xap-text-md);
   line-height: 1.6;
   white-space: pre-wrap;
@@ -521,10 +539,6 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
-}
-
-.xap-info-sheet__header .xap-post-actions {
-  margin-left: auto;
 }
 
 .xap-post-actions__btn {

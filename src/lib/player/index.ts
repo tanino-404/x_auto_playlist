@@ -5,6 +5,7 @@
 
 import type { ReadonlySignal } from "@preact/signals";
 import { effect, signal } from "@preact/signals";
+import { t } from "@/lib/i18n";
 import {
   bufferedEnd,
   isTimedKind,
@@ -31,11 +32,12 @@ import type { MediaSource, PlaylistItem, Quality } from "@/shared/types";
 export * from "@/lib/player/logic";
 export * from "@/lib/player/prefetch";
 
+/** Player error texts, in the UI language at the time they are shown (F-60). */
 export const MESSAGES = {
-  unplayable: "この動画は再生できない形式です",
-  error: "再生できませんでした。次へ進みます",
-  tooManyErrors: "再生エラーが続いたため停止しました",
-  nothingPlayable: "再生できる項目がありません",
+  unplayable: () => t("player.error.unplayable"),
+  error: () => t("player.error.failed"),
+  tooManyErrors: () => t("player.error.tooMany"),
+  nothingPlayable: () => t("player.error.nothingPlayable"),
 } as const;
 
 /** How long a transient lastError stays visible (ms). */
@@ -661,7 +663,7 @@ export function createPlayer(deps: { store: Store; random?: () => number }): Pla
     clearVideo();
     clearPrefetch();
     store.updatePlayback({ status: "idle", awaitingMore: false });
-    setLastError(MESSAGES.nothingPlayable, false);
+    setLastError(MESSAGES.nothingPlayable(), false);
   };
 
   /** Starts `item`. Unplayable items are skipped with a notice (not counted as errors). */
@@ -680,7 +682,7 @@ export function createPlayer(deps: { store: Store; random?: () => number }): Pla
         stopNothingPlayable();
         return;
       }
-      setLastError(MESSAGES.unplayable, true);
+      setLastError(MESSAGES.unplayable(), true);
       advance("user");
       return;
     }
@@ -914,11 +916,11 @@ export function createPlayer(deps: { store: Store; random?: () => number }): Pla
       clearVideo();
       clearPrefetch();
       store.updatePlayback({ consecutiveErrors: errors, status: "idle", awaitingMore: false });
-      setLastError(MESSAGES.tooManyErrors, false);
+      setLastError(MESSAGES.tooManyErrors(), false);
       return;
     }
     store.updatePlayback({ consecutiveErrors: errors });
-    setLastError(MESSAGES.error, true);
+    setLastError(MESSAGES.error(), true);
     advance("user");
   }
 

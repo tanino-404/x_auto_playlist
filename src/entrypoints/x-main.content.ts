@@ -4,6 +4,7 @@
 // chrome.* APIs; it only forwards raw GraphQL responses via window.postMessage.
 
 import { defineContentScript } from "wxt/utils/define-content-script";
+import { installFullscreenShim } from "@/lib/fullscreen-shim";
 import { installInterceptor } from "@/lib/interceptor";
 
 export default defineContentScript({
@@ -14,5 +15,9 @@ export default defineContentScript({
 
   main() {
     installInterceptor();
+    // X freezes its timeline (no row virtualisation updates, no further loading) while any
+    // element is fullscreen. Hide OUR fullscreen state from the page so auto-scroll keeps
+    // working in fullscreen (v1.1.1). X's own video fullscreen is unaffected.
+    installFullscreenShim();
   },
 });

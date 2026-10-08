@@ -1,5 +1,6 @@
 // Pure helpers for post actions (F-4C, docs/architecture.md §6.8). No DOM, no chrome.*.
 
+import { type MessageKey, t } from "@/lib/i18n";
 import type { PostActionOperation } from "@/shared/constants";
 import { POST_ACTION_OPERATIONS, X_WEB_BEARER } from "@/shared/constants";
 import type { PostFlags } from "@/shared/types";
@@ -212,39 +213,42 @@ export function classifyResponse(status: number, body: unknown): ResponseVerdict
   return { ok: true };
 }
 
-const SUCCESS_TEXT: Record<PostAction, [on: string, off: string]> = {
-  like: ["いいねしました", "いいねを取り消しました"],
-  bookmark: ["ブックマークしました", "ブックマークを解除しました"],
-  repost: ["リポストしました", "リポストを取り消しました"],
+const SUCCESS_KEY: Record<PostAction, [on: MessageKey, off: MessageKey]> = {
+  like: ["toast.like.done", "toast.like.undone"],
+  bookmark: ["toast.bookmark.done", "toast.bookmark.undone"],
+  repost: ["toast.repost.done", "toast.repost.undone"],
 };
 
-const FAILURE_VERB: Record<PostAction, [on: string, off: string]> = {
-  like: ["いいねできませんでした", "いいねを取り消せませんでした"],
-  bookmark: ["ブックマークできませんでした", "ブックマークを解除できませんでした"],
-  repost: ["リポストできませんでした", "リポストを取り消せませんでした"],
+const FAILURE_KEY: Record<PostAction, [on: MessageKey, off: MessageKey]> = {
+  like: ["toast.like.failed", "toast.like.undoFailed"],
+  bookmark: ["toast.bookmark.failed", "toast.bookmark.undoFailed"],
+  repost: ["toast.repost.failed", "toast.repost.undoFailed"],
 };
 
-const FAILURE_REASON: Record<PostActionFailure, string> = {
-  disabled: "（設定で無効になっています）",
-  "no-query-id": "（X の操作情報を取得できませんでした）",
-  unauthorized: "（ログインが必要です）",
-  "rate-limited": "（回数制限中です。しばらく待ってください）",
-  network: "（通信エラー）",
-  "automation-suspected": "（X が自動操作と判定しました。しばらく時間を置いてください）",
-  unknown: "（X がエラーを返しました）",
+const FAILURE_REASON_KEY: Record<PostActionFailure, MessageKey> = {
+  disabled: "toast.reason.disabled",
+  "no-query-id": "toast.reason.noQueryId",
+  unauthorized: "toast.reason.unauthorized",
+  "rate-limited": "toast.reason.rateLimited",
+  network: "toast.reason.network",
+  "automation-suspected": "toast.reason.automationSuspected",
+  unknown: "toast.reason.unknown",
 };
 
-/** Toast text for a result. `on` is the requested state (true = like / bookmark / repost). */
+/**
+ * Toast text for a result, in the current UI language (F-60). `on` is the requested state
+ * (true = like / bookmark / repost).
+ */
 export function noticeText(result: PostActionResult, on: boolean): string {
   const index = on ? 0 : 1;
   if (result.ok) {
-    return SUCCESS_TEXT[result.action][index];
+    return t(SUCCESS_KEY[result.action][index]);
   }
   if (result.status === 404) {
     // X refuses this mutation without its own signature header (seen with CreateBookmark).
-    return `${FAILURE_VERB[result.action][index]}（X 側の制限のため、この操作は現在使えません）`;
+    return t(FAILURE_KEY[result.action][index]) + t("toast.reason.unavailable");
   }
-  return FAILURE_VERB[result.action][index] + FAILURE_REASON[result.reason];
+  return t(FAILURE_KEY[result.action][index]) + t(FAILURE_REASON_KEY[result.reason]);
 }
 
 /** x-twitter-client-language: the first two letters of navigator.language (default "ja"). */

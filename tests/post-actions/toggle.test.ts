@@ -1,5 +1,6 @@
 import { computed, signal } from "@preact/signals";
-import { describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { initI18n } from "@/lib/i18n";
 import { createPostActions, type PostAction, type QueryIdStorage } from "@/lib/post-actions";
 import type { Notice, PlaylistState, Store } from "@/lib/store";
 import { applyPostFlags } from "@/lib/store/playlist";
@@ -112,6 +113,10 @@ function setup(
   const mutations = () => calls.filter((call) => call.url.startsWith("https://x.com/"));
   return { ...s, calls, mutations, postActions };
 }
+
+// The expected notices below are the Japanese texts (F-60: language set explicitly).
+beforeAll(() => initI18n({ settings: signal({ language: "ja" as const }) }));
+afterAll(() => initI18n(null));
 
 describe("postActions.toggle", () => {
   it("learns ids from the bundle and sends one well-formed FavoriteTweet", async () => {
