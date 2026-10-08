@@ -1,90 +1,117 @@
 # X Auto Playlist
 
-X（旧 Twitter）のタイムラインに流れてくる動画や画像を、**プレイリストにしてまとめて見る** ための Google Chrome 拡張機能です。
+English | [日本語](README_JP.md)
 
-X を開いたまま、画面の右側にプレイリストのパネルが並び、動画は小さな再生ウィンドウで次々に再生されます。音楽プレイヤーで曲を流すように、X の動画を流し見できます。
+A Google Chrome extension that turns the videos and images in your X (formerly Twitter) timeline into a **playlist you can watch back to back**.
 
-![再生中の画面](docs/images/readme-playing.png)
+With X still open, a playlist panel appears on the right side of the page and the videos play one after another in a small floating player. Think of it as a music player, but for the videos on X.
 
-## こんなときに
+![Playing a video](docs/images/readme-playing.png)
 
-- タイムラインの動画を 1 本ずつタップして開くのが面倒
-- 「いいね」や「ブックマーク」にためた動画を、あとでまとめて見たい
-- 作業の脇で X の動画を BGM 代わりに流しておきたい
+## Good for
 
-## できること
+- You are tired of opening timeline videos one by one
+- You want to watch the videos you saved to Likes or Bookmarks in one go
+- You want X videos running on the side while you do something else
 
-**自動でプレイリストを作る**
-開いているページ（ホーム、ブックマーク、いいね、ユーザーのメディア、検索結果）に並んでいる動画や画像が、自動でプレイリストに入ります。再生が一覧の終わり近くまで進むと、ページを少しずつ自動でスクロールして続きを読み込みます。
+## What it does
 
-**自分でプレイリストを作る**
-気になった投稿を右クリックして「プレイリストに追加」または「次に再生」を選ぶと、手動のプレイリストに入ります。1 つの投稿に写真が 4 枚あれば 4 枚とも入ります。手動のプレイリストはブラウザを閉じるまで残り、前回止めたところから再開できます。
+### Builds a playlist automatically
 
-**再生ウィンドウ**
-再生・一時停止、前後の移動、くり返し（全体／1 本だけ）、シャッフル、シークバー、音量（マウスを乗せてホイールでも変えられます）、再生速度、画質（自動、または投稿にある解像度から選択）、小窓再生（ピクチャ・イン・ピクチャ）、全画面。全画面にしてもプレイリストはそのまま横に出しておけます。
-投稿者と本文も表示され、「全文」を押すと本文を全部読めます。その投稿に「いいね」や「リポスト」もできます。
+Every video and image on the page you are viewing (Home, Bookmarks, Likes, a user's media tab, search results) is added to the playlist for you. When playback gets close to the end of the list, the page scrolls a little at a time to load more.
 
-![プレイリストのパネル](docs/images/readme-panel.png)
+### Lets you build your own playlist
 
-**プレイリストのパネル**
-サムネイルにマウスを乗せると冒頭が動きます。項目をダブルクリックするとそこから再生、ドラッグで順番の入れ替え（手動のときのみ）、「⋮」から削除・次に再生・元の投稿を開く、ができます。再生済みの項目は薄く表示するか、自動で消すかを選べます。
+Right-click a post and choose "Add to playlist" or "Play next" to put it in the manual playlist. A post with four photos adds all four. The manual playlist stays until you close the browser, and playback resumes where you left off.
 
-**設定**
-パネルの歯車から変えられます。自動／手動の切り替え、見た目（ライト／ダーク／端末に合わせる）、画像をプレイリストに含めるか、画像を表示する秒数、標準の画質、先読み、自動スクロール、既定の音量とくり返し、再生中に X 側の動画を止めるか、同じ動画をまとめるか、キーボード操作、再生済みの扱い、いいね／リポストのボタンを出すか。
+### The player window
 
-![設定画面](docs/images/readme-settings.png)
+Play / pause, previous / next, repeat (all or one), shuffle, a seek bar, volume (hover and scroll the wheel), playback speed, quality (auto, or any resolution the post offers), picture-in-picture, and fullscreen. The playlist panel can stay open next to the video even in fullscreen.
 
-**キーボード操作**（再生ウィンドウが出ているとき）
+The author and the post text are shown under the video. Press "Full text" to read the whole post, and like or repost it right there.
 
-| キー | 動き |
+### The playlist panel
+
+![The playlist panel](docs/images/readme-panel.png)
+
+Hover a thumbnail to preview the first seconds. Double-click an item to play from there, drag items to reorder them (manual mode), and use the "⋮" menu to remove an item, play it next, or open the original post. Items you have already watched can be dimmed or removed automatically.
+
+### Keyboard shortcuts
+
+Available while the player window is open. They are ignored while you are typing.
+
+| Key | Action |
 |---|---|
-| Space | 再生／一時停止 |
-| ← → | 5 秒戻る／進む |
-| Shift + ← → | 前の項目／次の項目 |
-| ↑ ↓ | 音量 |
-| F | 全画面 |
-| M | ミュート |
-| L | くり返しの切り替え |
-| S | シャッフル |
-| P | 小窓再生 |
+| Space | Play / pause |
+| ← → | Back / forward 5 seconds |
+| Shift + ← → | Previous / next item |
+| ↑ ↓ | Volume |
+| F | Fullscreen |
+| M | Mute |
+| L | Cycle repeat mode |
+| S | Shuffle |
+| P | Picture-in-picture |
 
-文字を入力しているときは、これらのキーは効きません。
+## Settings
 
-## インストール
+![Settings](docs/images/readme-settings.png)
 
-Chrome ウェブストアでは配布していません。ファイルを直接 Chrome に読み込みます。
+Open them from the gear icon at the top right of the panel.
 
-1. このページの右側にある **Releases** から、最新の `x-auto-playlist-〇〇-chrome.zip` をダウンロードします。
-2. zip を展開します（フォルダができます）。
-3. Chrome のアドレス欄に `chrome://extensions` と入力して開きます。
-4. 右上の **「デベロッパーモード」** をオンにします。
-5. **「パッケージ化されていない拡張機能を読み込む」** を押し、2 で展開したフォルダを選びます。
-6. ツールバーに青緑のアイコンが出れば完了です（見当たらないときはパズルのアイコンから固定してください）。
+| Setting | What it does |
+|---|---|
+| Playlist mode | "Auto" collects from the page you are viewing. "Manual" uses only the items you added by right-clicking. |
+| Theme | Look of the panel and player: light, dark, or follow the system. |
+| Include images | Turn off to collect videos only. |
+| Image display time | How many seconds an image or GIF is shown before moving on (1 to 20). |
+| Default quality | Quality used when playback starts: auto, highest, or lowest. While playing, the quality menu in the player lists the exact resolutions the post offers. |
+| Thumbnail hover preview | When on, hovering a thumbnail plays its first seconds. Turn off to save bandwidth. |
+| Prefetch | Loads the next video ahead of time to cut the gap between videos: off, next item, or previous and next. |
+| Auto-scroll | In auto mode, scrolls the page to load more posts when the list is nearly finished. |
+| Auto-scroll pace | How often it scrolls. "Slow" is the safe choice. |
+| Default volume | Volume when the extension starts. |
+| Default repeat | Repeat mode when the extension starts: all, one, or off. |
+| Pause X's videos while playing | Stops the videos that autoplay in the X timeline while the player is running. |
+| Skip duplicates | Adds a video only once even if it shows up again as a repost. |
+| Keyboard shortcuts | Whether the keys in the table above are active. |
+| Watched items | What happens to items you have watched: keep, dim, or remove automatically. |
+| Post actions in the player | Whether the like and repost buttons are shown in the player. |
 
-更新するときは、新しい zip を同じ場所に展開し、`chrome://extensions` で拡張機能の「更新」（丸い矢印）を押します。
+## Install
 
-## 使い方
+The extension is not on the Chrome Web Store. You load it into Chrome yourself.
 
-1. X（x.com）にログインして、ホームや「履歴」（ブックマーク／いいね）を開きます。
-2. ツールバーのアイコンをクリックすると、右側にパネルが開き、そのページの動画や画像が並びます。
-3. パネルの **再生ボタン** を押すか、項目を **ダブルクリック** すると再生が始まります。項目が増えただけでは勝手に再生は始まりません。
-4. 右クリックで追加した項目は、パネル上部の **「手動」** に切り替えると見られます。
-5. パネルとページの境目をドラッグすると、パネルの幅を変えられます。パネルを閉じるときは右上の「×」か、もう一度ツールバーのアイコンを押します。
+1. Download the latest `x-auto-playlist-<version>-chrome.zip` from **Releases** on the right side of this page.
+2. Unzip it. You get a folder.
+3. Type `chrome://extensions` in Chrome's address bar and open it.
+4. Turn on **Developer mode** at the top right.
+5. Click **Load unpacked** and pick the folder from step 2.
+6. A teal icon appears in the toolbar. If you do not see it, pin it from the puzzle-piece menu.
 
-## 知っておいてほしいこと
+To update, unzip the new version over the same folder and press the reload arrow for the extension on `chrome://extensions`.
 
-- **非公式のツールです。** X 社とは関係ありません。X の中の仕組みを使っているため、X 側の変更で突然動かなくなることがあります。そのときはパネルに「X から情報を取得できません」と出ます。
-- **ブックマークは再生ウィンドウからは付けられません**（X 側の制限のため）。X の画面で普段どおり操作してください。
-- 「いいね」や「リポスト」を短時間に何度もくり返すと、X に自動操作とみなされて拒否されることがあります。その場合は少し時間を置いてください。
-- ライブ配信の録画など、一部の動画は再生できず「再生不可」と表示されます。
-- 小さな再生ウィンドウでは画質が自動で低めになります。くっきり見たいときは画質メニューから選んでください。
-- X にログインしていないと動画は集まりません。
-- 動画や画像を保存する機能はありません。
+## How to use
 
-## 開発者向け
+1. Sign in to X (x.com) and open Home or History (Bookmarks / Likes).
+2. Click the toolbar icon. The panel opens on the right and fills with the videos and images on that page.
+3. Press the **play button** in the panel, or **double-click** an item, to start. Playback never starts on its own just because items were added.
+4. Items you added by right-clicking are in the **Manual** list, selected at the top of the panel.
+5. Drag the divider between the page and the panel to resize it. Close the panel with the "×" at the top right or by clicking the toolbar icon again.
 
-仕組みや開発手順は [docs](docs/) にまとめています（[要件](docs/requirements.md)、[設計](docs/architecture.md)、[最終確認](docs/final_check.md)、[リリースノート](docs/release_notes.md)）。自分でビルドする場合は Node.js 22 以上で `npm install` → `npm run build` を実行し、`.output/chrome-mv3` を読み込みます。
+## Things to know
 
-## ライセンス
+- **This is an unofficial tool** with no connection to X Corp. It relies on how X works internally, so a change on X's side can break it without warning. When that happens the panel shows a message saying it cannot get data from X.
+- **Bookmarking is not available from the player** because of a restriction on X's side. Use X's own bookmark button.
+- Liking or reposting many times in a short period may be refused by X as automated activity. Wait a while and try again.
+- Some videos, such as recordings of live broadcasts, cannot be played and are shown as "unplayable".
+- In a small player window the automatic quality is on the low side. Pick a resolution from the quality menu if you want it sharper.
+- Nothing is collected unless you are signed in to X.
+- The extension does not download or save any video or image.
 
-未定です（公開前に `LICENSE` を追加してください）。
+## For developers
+
+The design, requirements and build instructions live in [docs](docs/) (in Japanese): [requirements](docs/requirements.md), [architecture](docs/architecture.md), [final check](docs/final_check.md), [release notes](docs/release_notes.md). To build it yourself, use Node.js 22 or later, run `npm install` and `npm run build`, then load `.output/chrome-mv3`.
+
+## License
+
+[Apache License 2.0](LICENSE)
