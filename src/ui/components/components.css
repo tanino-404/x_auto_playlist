@@ -1,0 +1,411 @@
+/* Shared small controls. Colors come from tokens.css (--xap-*). The player window re-points
+   the same tokens to its always-dark chrome (tokens.css, .xap-player), so nothing forks here. */
+
+.xap-icon {
+  display: block;
+  flex: none;
+}
+
+.xap-icon-btn {
+  appearance: none;
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: var(--xap-radius-sm);
+  background: transparent;
+  color: var(--xap-fg);
+  cursor: pointer;
+  transition:
+    background-color var(--xap-dur) var(--xap-ease),
+    color var(--xap-dur) var(--xap-ease),
+    transform var(--xap-dur) var(--xap-ease);
+}
+
+.xap-icon-btn:hover:not(:disabled) {
+  background: var(--xap-bg-hover);
+  color: var(--xap-fg);
+}
+
+.xap-icon-btn:active:not(:disabled) {
+  background: var(--xap-bg-active);
+  transform: scale(0.94);
+}
+
+/* "On" toggles (loop / shuffle / mute): tally color plus a dot, so the state is not
+   carried by color alone. */
+.xap-icon-btn[data-active="true"],
+.xap-icon-btn[data-active="true"]:hover:not(:disabled) {
+  color: var(--xap-accent);
+}
+
+.xap-icon-btn[data-active="true"]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 1px;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.xap-icon-btn:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.xap-icon-btn:focus-visible,
+.xap-volume__bar:focus-visible,
+.xap-seek:focus-visible,
+.xap-menu__trigger:focus-visible,
+.xap-menu__item:focus-visible {
+  outline: 2px solid var(--xap-focus);
+  outline-offset: 1px;
+}
+
+/* ---- volume (VLC-style wedge + "50%") ---- */
+
+.xap-volume {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+}
+
+.xap-volume__bar {
+  position: relative;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  border-radius: 2px;
+  cursor: pointer;
+  touch-action: none;
+  flex: none;
+}
+
+/* The wedge rises left to right like VLC's; the fill is clipped by the same shape. */
+.xap-volume__track {
+  position: relative;
+  width: 100%;
+  height: 10px;
+  background: var(--xap-border);
+  clip-path: polygon(0 100%, 100% 0, 100% 100%);
+  overflow: hidden;
+}
+
+.xap-volume__fill {
+  height: 100%;
+  background: var(--xap-accent);
+}
+
+.xap-volume[data-muted="true"] .xap-volume__fill {
+  background: var(--xap-fg-muted);
+  opacity: 0.6;
+}
+
+/* A thin cursor line instead of a round knob (the wedge has no centre line to ride on). */
+.xap-volume__thumb {
+  position: absolute;
+  top: 50%;
+  width: 2px;
+  height: 14px;
+  margin: -7px 0 0 -1px;
+  border-radius: 1px;
+  background: var(--xap-fg);
+  opacity: 0;
+  transition: opacity var(--xap-dur) var(--xap-ease);
+  pointer-events: none;
+}
+
+.xap-volume__bar:hover .xap-volume__thumb,
+.xap-volume__bar:focus-visible .xap-volume__thumb {
+  opacity: 1;
+}
+
+.xap-volume__value {
+  min-width: 3.4em;
+  padding-left: 2px;
+  font-size: var(--xap-text-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--xap-fg);
+}
+
+.xap-volume[data-muted="true"] .xap-volume__value {
+  color: var(--xap-fg-muted);
+  text-decoration: line-through;
+}
+
+/* ---- menu ---- */
+
+.xap-menu {
+  position: relative;
+  flex: none;
+}
+
+.xap-menu__trigger {
+  appearance: none;
+  height: 28px;
+  padding: 0 var(--xap-space-2);
+  border: none;
+  border-radius: var(--xap-radius-sm);
+  background: transparent;
+  color: var(--xap-fg);
+  font-size: var(--xap-text-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--xap-dur) var(--xap-ease),
+    transform var(--xap-dur) var(--xap-ease);
+}
+
+.xap-menu__trigger:active {
+  transform: scale(0.94);
+}
+
+.xap-menu__trigger:hover,
+.xap-menu[data-open="true"] > .xap-menu__trigger {
+  background: var(--xap-bg-hover);
+}
+
+.xap-menu__popup {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 4px);
+  z-index: 5;
+  min-width: 112px;
+  display: flex;
+  flex-direction: column;
+  padding: 3px;
+  border: 1px solid var(--xap-border);
+  border-radius: var(--xap-radius-popup);
+  background: var(--xap-bg);
+  color: var(--xap-fg);
+  box-shadow: var(--xap-shadow-sm);
+  /* Right-aligned with the trigger and opening above it by default. */
+  transform-origin: bottom right;
+  animation: xap-menu-in var(--xap-dur) var(--xap-ease);
+}
+
+@keyframes xap-menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+.xap-menu__item {
+  appearance: none;
+  position: relative;
+  min-height: 28px;
+  padding: 4px var(--xap-space-3) 4px 22px;
+  border: none;
+  border-radius: var(--xap-radius-xs);
+  background: transparent;
+  color: var(--xap-fg);
+  font-size: var(--xap-text-sm);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* Action menus (row ⋮) have no check column. */
+.xap-menu__item[role="menuitem"] {
+  padding-left: var(--xap-space-2);
+}
+
+.xap-menu__item:hover {
+  background: var(--xap-bg-hover);
+}
+
+.xap-menu__item[aria-checked="true"] {
+  font-weight: 600;
+}
+
+/* Check mark for the chosen radio item (drawn, not a glyph). */
+.xap-menu__item[aria-checked="true"]::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  width: 4px;
+  height: 8px;
+  margin-top: -6px;
+  border: solid var(--xap-accent);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* ---- seek bar ---- */
+
+.xap-seek {
+  position: relative;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.xap-seek[data-disabled="true"] {
+  cursor: default;
+}
+
+.xap-seek__track {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--xap-fg) 18%, transparent);
+  overflow: hidden;
+  transition: height var(--xap-dur) var(--xap-ease);
+}
+
+.xap-seek:hover .xap-seek__track,
+.xap-seek:focus-visible .xap-seek__track {
+  height: 5px;
+}
+
+.xap-seek__buffered,
+.xap-seek__played {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+}
+
+.xap-seek__buffered {
+  background: color-mix(in srgb, var(--xap-fg) 22%, transparent);
+}
+
+.xap-seek__played {
+  background: var(--xap-accent);
+}
+
+.xap-seek[data-disabled="true"] .xap-seek__played {
+  background: var(--xap-fg-muted);
+}
+
+.xap-seek__thumb {
+  position: absolute;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  margin: -5.5px 0 0 -5.5px;
+  border-radius: 50%;
+  background: var(--xap-fg);
+  box-shadow: 0 0 0 2px var(--xap-accent);
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity var(--xap-dur) var(--xap-ease),
+    transform var(--xap-dur) var(--xap-ease);
+  pointer-events: none;
+}
+
+.xap-seek:hover .xap-seek__thumb,
+.xap-seek:focus-visible .xap-seek__thumb {
+  opacity: 1;
+  transform: none;
+}
+
+.xap-seek__tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  padding: 2px 6px;
+  border-radius: var(--xap-radius-xs);
+  background: #0d0e10;
+  color: #f2f2ef;
+  font-size: var(--xap-text-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.xap-menu__popup[data-placement="below"] {
+  top: calc(100% + 4px);
+  bottom: auto;
+  transform-origin: top right;
+}
+
+/* ---- toast (F-1B): a quiet strip, not a banner ---- */
+
+.xap-toast {
+  position: absolute;
+  left: var(--xap-space-3);
+  right: var(--xap-space-3);
+  bottom: var(--xap-space-2);
+  z-index: 6;
+  padding: 7px var(--xap-space-3);
+  border: 1px solid var(--xap-border);
+  border-radius: var(--xap-radius-sm);
+  background: var(--xap-bg-elevated);
+  color: var(--xap-fg);
+  box-shadow: var(--xap-shadow-sm);
+  font-size: var(--xap-text-sm);
+  line-height: 1.4;
+  pointer-events: none;
+  animation: xap-toast-in var(--xap-dur-slow) var(--xap-ease);
+}
+
+.xap-toast[data-kind="error"] {
+  border-color: color-mix(in srgb, var(--xap-danger) 45%, var(--xap-border));
+  color: var(--xap-danger);
+  background: var(--xap-danger-bg);
+}
+
+@keyframes xap-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* The notice expired or was cleared: fade out in place (Toast keeps it rendered meanwhile). */
+.xap-toast--leaving {
+  animation: xap-toast-out var(--xap-dur) var(--xap-ease) forwards;
+}
+
+@keyframes xap-toast-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.xap-toast-region {
+  position: relative;
+  height: 0;
+  flex: none;
+}
+
+/* ---- overlay layer (see overlay.ts) ---- */
+
+.xap-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.xap-overlay > * {
+  pointer-events: auto;
+}
+
+.xap-menu__popup[data-portal="true"] {
+  position: fixed;
+  right: auto;
+  bottom: auto;
+}
+
+.xap-toast[data-portal="true"] {
+  position: fixed;
+}

@@ -1,0 +1,118 @@
+{
+  "data": {
+    "bookmark_timeline_v2": {
+      "timeline": {
+        "instructions": [
+          {
+            "type": "TimelineAddEntries",
+            "entries": [
+              {
+                "entryId": "tweet-2001",
+                "sortIndex": "500",
+                "content": {
+                  "entryType": "TimelineTimelineItem",
+                  "__typename": "TimelineTimelineItem",
+                  "itemContent": {
+                    "itemType": "TimelineTweet",
+                    "__typename": "TimelineTweet",
+                    "tweet_results": {
+                      "result": {
+                        "__typename": "Tweet",
+                        "rest_id": "2001",
+                        "core": {
+                          "user_results": {
+                            "result": {
+                              "__typename": "User",
+                              "id": "VXNlcjo103",
+                              "rest_id": "103",
+                              "core": {
+                                "created_at": "Mon Jan 01 00:00:00 +0000 2024",
+                                "name": "Carol",
+                                "screen_name": "carol"
+                              },
+                              "avatar": {
+                                "image_url": "https://pbs.twimg.com/profile_images/103/carol_normal.jpg"
+                              },
+                              "legacy": {
+                                "followers_count": 10,
+                                "description": ""
+                              }
+                            }
+                          }
+                        },
+                        "legacy": {
+                          "id_str": "2001",
+                          "full_text": "bookmarked video",
+                          "created_at": "Mon Sep 28 00:00:00 +0000 2026",
+                          "entities": {
+                            "hashtags": [],
+                            "urls": []
+                          },
+                          "extended_entities": {
+                            "media": [
+                              {
+                                "display_url": "pic.x.com/vid",
+                                "id_str": "20001",
+                                "media_key": "7_20001",
+                                "media_url_https": "https://pbs.twimg.com/ext_tw_video_thumb/20001/pu/img/thumb.jpg",
+                                "type": "video",
+                                "original_info": {
+                                  "width": 1280,
+                                  "height": 720
+                                },
+                                "video_info": {
+                                  "aspect_ratio": [16, 9],
+                                  "duration_millis": 12345,
+                                  "variants": [
+                                    {
+                                      "content_type": "application/x-mpegURL",
+                                      "url": "https://video.twimg.com/ext_tw_video/20001/pu/pl/abc.m3u8?tag=12"
+                                    },
+                                    {
+                                      "bitrate": 832000,
+                                      "content_type": "video/mp4",
+                                      "url": "https://video.twimg.com/ext_tw_video/20001/pu/vid/avc1/640x360/mid.mp4?tag=12"
+                                    },
+                                    {
+                                      "bitrate": 2176000,
+                                      "content_type": "video/mp4",
+                                      "url": "https://video.twimg.com/ext_tw_video/20001/pu/vid/avc1/1280x720/high.mp4?tag=12"
+                                    },
+                                    {
+                                      "bitrate": 256000,
+                                      "content_type": "video/mp4",
+                                      "url": "https://video.twimg.com/ext_tw_video/20001/pu/vid/avc1/320x180/low.mp4?tag=12"
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "views": {
+                          "count": "100",
+                          "state": "EnabledWithCount"
+                        }
+                      }
+                    },
+                    "tweetDisplayType": "Tweet"
+                  }
+                }
+              },
+              {
+                "entryId": "cursor-bottom-499",
+                "sortIndex": "499",
+                "content": {
+                  "entryType": "TimelineTimelineCursor",
+                  "__typename": "TimelineTimelineCursor",
+                  "value": "DAABCgABG",
+                  "cursorType": "Bottom"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

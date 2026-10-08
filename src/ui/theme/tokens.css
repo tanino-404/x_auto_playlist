@@ -1,0 +1,130 @@
+/* Shared file: edited by the PL only (stage 7 design pass: delegated once).
+   Design tokens for the content UI. Light is the default; dark is applied by
+   [data-theme="dark"] on the UI root (the theme module resolves "system").
+
+   Palette ("ink, graphite, tally"):
+   - ink / paper: warm-neutral, deliberately not x.com's pure white + slate blue.
+   - tally (--xap-accent): deep teal. Reserved for "playing / on" — the playing row, the
+     played part of the seek and volume bars, active loop / shuffle. Nothing decorative.
+   - selection is an ink ring, so it never reads as "playing".
+   Radii step down with hierarchy (window 8 > popup 6 > control 4 > thumbnail 3 > row 0),
+   squarer than x.com's round buttons. */
+
+:host {
+  color-scheme: light;
+}
+
+.xap-root {
+  --xap-font:
+    "Segoe UI Variable Text", "Segoe UI", "Yu Gothic UI", -apple-system, BlinkMacSystemFont,
+    "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", Meiryo, system-ui, sans-serif;
+  --xap-font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --xap-bg: #fbfbfa;
+  --xap-bg-elevated: #f3f3f1;
+  --xap-bg-hover: #efefec;
+  --xap-bg-active: #e7e7e3;
+  --xap-fg: #1d1e20;
+  --xap-fg-muted: #5c5f66;
+  --xap-border: #e3e3df;
+  /* Outlines of interactive controls (inputs, switch track): >= 3:1 against the background. */
+  --xap-border-strong: #8d9096;
+  --xap-accent: #0b7068;
+  --xap-accent-fg: #ffffff;
+  --xap-playing-bg: #e1ecea;
+  --xap-selected-ring: #1d1e20;
+  --xap-focus: #0b7068;
+  --xap-danger: #b3261e;
+  --xap-danger-bg: #f5e8e6;
+  --xap-scrim: rgba(12, 13, 14, 0.62);
+  --xap-shadow: 0 14px 36px -10px rgba(24, 24, 20, 0.34), 0 2px 6px rgba(24, 24, 20, 0.12);
+  --xap-shadow-sm: 0 6px 18px -6px rgba(24, 24, 20, 0.28), 0 1px 2px rgba(24, 24, 20, 0.1);
+
+  --xap-radius-xs: 3px;
+  --xap-radius-sm: 4px;
+  --xap-radius-md: 8px;
+  --xap-radius-lg: 12px;
+  --xap-radius-popup: 6px;
+
+  --xap-space-1: 4px;
+  --xap-space-2: 8px;
+  --xap-space-3: 12px;
+  --xap-space-4: 16px;
+
+  --xap-text-xs: 11px;
+  --xap-text-sm: 12px;
+  --xap-text-md: 13px;
+  --xap-text-lg: 15px;
+
+  --xap-dur: 120ms;
+  --xap-dur-slow: 180ms;
+  --xap-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  font-family: var(--xap-font);
+  font-size: var(--xap-text-md);
+  line-height: 1.4;
+  color: var(--xap-fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.xap-root[data-theme="dark"] {
+  color-scheme: dark;
+  --xap-bg: #1c1d20;
+  --xap-bg-elevated: #232427;
+  --xap-bg-hover: #2b2d31;
+  --xap-bg-active: #34363b;
+  --xap-fg: #e6e6e3;
+  --xap-fg-muted: #a0a3a9;
+  --xap-border: #313337;
+  --xap-border-strong: #6b6e75;
+  --xap-accent: #46c2b6;
+  --xap-accent-fg: #0c2624;
+  --xap-playing-bg: #233738;
+  --xap-selected-ring: #e6e6e3;
+  --xap-focus: #46c2b6;
+  --xap-danger: #ff8a80;
+  --xap-danger-bg: #3a2525;
+  --xap-scrim: rgba(0, 0, 0, 0.66);
+  --xap-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --xap-shadow-sm: 0 8px 20px -6px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* The player window frames video, so its chrome is always dark (like any video player),
+   whatever the panel theme. The same tokens are re-pointed, so components need no forks. */
+.xap-root .xap-player {
+  color-scheme: dark;
+  --xap-bg: #1f2023;
+  --xap-bg-elevated: #1f2023;
+  --xap-bg-hover: #2e3034;
+  --xap-bg-active: #383a3f;
+  --xap-fg: #e6e6e3;
+  --xap-fg-muted: #a0a3a9;
+  --xap-border: #34363a;
+  --xap-border-strong: #6b6e75;
+  --xap-accent: #46c2b6;
+  --xap-accent-fg: #0c2624;
+  --xap-focus: #46c2b6;
+  --xap-danger: #ff8a80;
+  --xap-danger-bg: #3a2525;
+  color: var(--xap-fg);
+}
+
+.xap-root *,
+.xap-root *::before,
+.xap-root *::after {
+  box-sizing: border-box;
+}
+
+/* Zero-specificity reset so component classes always win over it. */
+:where(.xap-root) button {
+  font: inherit;
+  color: inherit;
+}
+
+/* Reduced motion: every transition / animation in the UI reads its duration from these. */
+@media (prefers-reduced-motion: reduce) {
+  .xap-root {
+    --xap-dur: 0ms;
+    --xap-dur-slow: 0ms;
+  }
+}

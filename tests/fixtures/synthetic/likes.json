@@ -1,0 +1,180 @@
+{
+  "data": {
+    "user": {
+      "result": {
+        "__typename": "User",
+        "timeline": {
+          "timeline": {
+            "instructions": [
+              {
+                "type": "TimelineClearCache"
+              },
+              {
+                "type": "TimelineAddEntries",
+                "entries": [
+                  {
+                    "entryId": "tweet-3001",
+                    "sortIndex": "700",
+                    "content": {
+                      "entryType": "TimelineTimelineItem",
+                      "__typename": "TimelineTimelineItem",
+                      "itemContent": {
+                        "itemType": "TimelineTweet",
+                        "__typename": "TimelineTweet",
+                        "tweet_results": {
+                          "result": {
+                            "__typename": "Tweet",
+                            "rest_id": "3001",
+                            "core": {
+                              "user_results": {
+                                "result": {
+                                  "__typename": "User",
+                                  "id": "VXNlcjo102",
+                                  "rest_id": "102",
+                                  "legacy": {
+                                    "name": "Bob",
+                                    "screen_name": "bob",
+                                    "profile_image_url_https": "https://pbs.twimg.com/profile_images/102/bob_normal.jpg",
+                                    "followers_count": 10
+                                  }
+                                }
+                              }
+                            },
+                            "legacy": {
+                              "id_str": "3001",
+                              "full_text": "liked photo",
+                              "created_at": "Mon Sep 28 00:00:00 +0000 2026",
+                              "entities": {
+                                "hashtags": [],
+                                "urls": []
+                              },
+                              "extended_entities": {
+                                "media": [
+                                  {
+                                    "display_url": "pic.x.com/abc",
+                                    "id_str": "30001",
+                                    "media_key": "3_30001",
+                                    "media_url_https": "https://pbs.twimg.com/media/p30001.jpg",
+                                    "type": "photo",
+                                    "original_info": {
+                                      "width": 1200,
+                                      "height": 800
+                                    },
+                                    "sizes": {
+                                      "large": {
+                                        "w": 1200,
+                                        "h": 800,
+                                        "resize": "fit"
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            "views": {
+                              "count": "100",
+                              "state": "EnabledWithCount"
+                            }
+                          }
+                        },
+                        "tweetDisplayType": "Tweet"
+                      }
+                    }
+                  },
+                  {
+                    "entryId": "tweet-3002",
+                    "sortIndex": "699",
+                    "content": {
+                      "entryType": "TimelineTimelineItem",
+                      "__typename": "TimelineTimelineItem",
+                      "itemContent": {
+                        "itemType": "TimelineTweet",
+                        "__typename": "TimelineTweet",
+                        "tweet_results": {
+                          "result": {
+                            "__typename": "Tweet",
+                            "rest_id": "3002",
+                            "core": {
+                              "user_results": {
+                                "result": {
+                                  "__typename": "User",
+                                  "id": "VXNlcjo101",
+                                  "rest_id": "101",
+                                  "core": {
+                                    "created_at": "Mon Jan 01 00:00:00 +0000 2024",
+                                    "name": "Alice",
+                                    "screen_name": "alice"
+                                  },
+                                  "avatar": {
+                                    "image_url": "https://pbs.twimg.com/profile_images/101/alice_normal.jpg"
+                                  },
+                                  "legacy": {
+                                    "followers_count": 10,
+                                    "description": ""
+                                  }
+                                }
+                              }
+                            },
+                            "legacy": {
+                              "id_str": "3002",
+                              "full_text": "liked gif",
+                              "created_at": "Mon Sep 28 00:00:00 +0000 2026",
+                              "entities": {
+                                "hashtags": [],
+                                "urls": []
+                              },
+                              "extended_entities": {
+                                "media": [
+                                  {
+                                    "display_url": "pic.x.com/gif",
+                                    "id_str": "30002",
+                                    "media_key": "16_30002",
+                                    "media_url_https": "https://pbs.twimg.com/tweet_video_thumb/G30002.jpg",
+                                    "type": "animated_gif",
+                                    "original_info": {
+                                      "width": 480,
+                                      "height": 270
+                                    },
+                                    "video_info": {
+                                      "aspect_ratio": [16, 9],
+                                      "variants": [
+                                        {
+                                          "bitrate": 0,
+                                          "content_type": "video/mp4",
+                                          "url": "https://video.twimg.com/tweet_video/G30002.mp4"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            "views": {
+                              "count": "100",
+                              "state": "EnabledWithCount"
+                            }
+                          }
+                        },
+                        "tweetDisplayType": "Tweet"
+                      }
+                    }
+                  },
+                  {
+                    "entryId": "cursor-bottom-698",
+                    "sortIndex": "698",
+                    "content": {
+                      "entryType": "TimelineTimelineCursor",
+                      "__typename": "TimelineTimelineCursor",
+                      "value": "DAABCgABG",
+                      "cursorType": "Bottom"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

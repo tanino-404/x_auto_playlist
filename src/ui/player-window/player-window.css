@@ -1,0 +1,571 @@
+/* Floating player window (docs/architecture.md §7.2). Colors/spacing come from tokens.css;
+   the chrome is always dark (tokens.css re-points --xap-* on .xap-player).
+   Title bar 32px + seek row 12px + controls 40px must match PLAYER_CHROME_HEIGHT in
+   geometry.ts. */
+
+.xap-player {
+  position: fixed;
+  /* Above the side panel (10) so a window dragged over it stays visible; below the overlay
+     layer (30) that holds toasts and row menus. */
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  border: 1px solid #34363a;
+  border-radius: var(--xap-radius-md);
+  box-shadow:
+    0 18px 44px -12px rgba(0, 0, 0, 0.55),
+    0 2px 8px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  pointer-events: auto;
+  user-select: none;
+  container-type: inline-size;
+  container-name: xap-player;
+  /* Appears when playback starts (stage 9). */
+  animation: xap-player-in var(--xap-dur-slow) var(--xap-ease);
+}
+
+@keyframes xap-player-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+
+/* Playback stopped: fade and shrink back, quicker than the entrance. */
+.xap-player--leaving {
+  pointer-events: none;
+  animation: xap-player-out var(--xap-dur) var(--xap-ease) forwards;
+}
+
+@keyframes xap-player-out {
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+
+.xap-player__titlebar {
+  flex: none;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: var(--xap-space-1);
+  padding: 0 2px 0 var(--xap-space-3);
+  background: var(--xap-bg-elevated);
+  border-bottom: 1px solid #000;
+  cursor: move;
+  touch-action: none;
+}
+
+.xap-player__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--xap-text-sm);
+  font-weight: 600;
+  color: var(--xap-fg-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.xap-player__titlebar:hover .xap-player__title {
+  color: var(--xap-fg);
+}
+
+.xap-player__titlebar .xap-icon-btn {
+  width: 26px;
+  height: 26px;
+}
+
+/* ---- video / photo area ---- */
+
+.xap-player__stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  background: #000;
+  cursor: pointer;
+}
+
+.xap-player__media {
+  position: absolute;
+  inset: 0;
+}
+
+.xap-player__media > video,
+.xap-player__media > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.xap-player__media > [hidden] {
+  display: none;
+}
+
+.xap-player__notice {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: var(--xap-text-sm);
+  pointer-events: none;
+}
+
+.xap-player__error {
+  position: absolute;
+  top: var(--xap-space-2);
+  left: var(--xap-space-2);
+  right: var(--xap-space-2);
+  z-index: 2;
+  padding: var(--xap-space-1) var(--xap-space-2);
+  border-radius: var(--xap-radius-xs);
+  background: rgba(14, 15, 16, 0.84);
+  color: #f2f2ef;
+  box-shadow: inset 3px 0 0 var(--xap-danger);
+  padding-left: calc(var(--xap-space-2) + 3px);
+  font-size: var(--xap-text-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+/* ---- media info (F-41 / F-42) ---- */
+
+.xap-info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--xap-space-2);
+  padding: 28px var(--xap-space-3) var(--xap-space-2);
+  /* Legibility scrim for text over video (functional, not decoration). */
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.72) 0%,
+    rgba(0, 0, 0, 0.4) 55%,
+    rgba(0, 0, 0, 0)
+  );
+  color: #fff;
+  cursor: default;
+}
+
+.xap-info__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.xap-info__author {
+  display: flex;
+  align-items: center;
+  gap: var(--xap-space-1);
+  min-width: 0;
+  font-size: var(--xap-text-sm);
+}
+
+.xap-info__avatar {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.xap-info__name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.xap-info__screen-name {
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.xap-info__text {
+  margin: 0;
+  font-size: var(--xap-text-sm);
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.xap-info__toggle {
+  appearance: none;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 24px;
+  padding: 0 var(--xap-space-2) 0 var(--xap-space-1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--xap-radius-sm);
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-size: var(--xap-text-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--xap-dur) var(--xap-ease),
+    transform var(--xap-dur) var(--xap-ease);
+}
+
+.xap-info__toggle:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.xap-info__toggle:active {
+  transform: scale(0.94);
+}
+
+.xap-info__toggle:focus-visible,
+.xap-info-sheet__link:focus-visible {
+  outline: 2px solid var(--xap-focus);
+  outline-offset: 1px;
+}
+
+/* Full text (F-42): a bottom sheet that grows up from the bottom edge of the video with its
+   content, capped at half the video height (then the text scrolls inside). The upper half of
+   the picture stays visible. The close button takes the 全文 button's place (bottom right),
+   well away from the title bar's window close button. */
+.xap-info-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  max-height: 50%;
+  display: flex;
+  flex-direction: column;
+  background: rgba(16, 17, 19, 0.84);
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.08);
+  color: #f2f2ef;
+  cursor: default;
+  user-select: text;
+  animation: xap-sheet-in var(--xap-dur-slow) var(--xap-ease);
+}
+
+/* Slides up from the bottom edge of the video by its own height (whatever that is). */
+@keyframes xap-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+.xap-info-sheet__scroll {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  /* Right padding keeps the text clear of the close button. */
+  padding: 10px 88px 10px var(--xap-space-3);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+}
+
+.xap-info-sheet__close {
+  position: absolute;
+  right: var(--xap-space-3);
+  bottom: var(--xap-space-2);
+}
+
+.xap-info-sheet__header {
+  display: flex;
+  align-items: center;
+  gap: var(--xap-space-2);
+  min-width: 0;
+}
+
+.xap-info-sheet__text {
+  margin: 0;
+  max-width: 62ch;
+  font-size: var(--xap-text-md);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.xap-info-sheet__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--xap-space-1);
+  align-self: flex-start;
+  color: var(--xap-accent);
+  font-size: var(--xap-text-sm);
+  text-decoration: none;
+}
+
+.xap-info-sheet__link:hover {
+  text-decoration: underline;
+}
+
+/* ---- seek row + controls ---- */
+
+.xap-player__bottom {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  background: var(--xap-bg-elevated);
+  border-top: 1px solid #000;
+}
+
+.xap-player__seek-row {
+  height: 12px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+}
+
+.xap-player__seek-row > .xap-seek {
+  flex: 1 1 auto;
+}
+
+.xap-player__controls {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 var(--xap-space-1);
+  min-width: 0;
+}
+
+.xap-player__time {
+  flex: none;
+  padding: 0 var(--xap-space-1);
+  font-size: var(--xap-text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--xap-fg-muted);
+  white-space: nowrap;
+}
+
+.xap-player__controls .xap-menu__trigger {
+  padding: 0 6px;
+}
+
+.xap-player__controls .xap-volume__value {
+  min-width: 3em;
+}
+
+.xap-player__spacer {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* ---- narrow windows: controls drop out in a fixed order so the row never overflows.
+   Order: time readout, volume "%", volume bar, loop / shuffle (also in the panel), quality,
+   PiP. Prev / play / next, mute, speed, fullscreen and the panel toggle (F-4F) always stay
+   (fits the 240px minimum). Widths are the container (window) widths; they leave ~32px for
+   a quality label such as "自動 1080p". ---- */
+
+.xap-player__controls .xap-icon-btn {
+  width: 26px;
+}
+
+@container xap-player (max-width: 501px) {
+  .xap-player__time {
+    display: none;
+  }
+}
+
+@container xap-player (max-width: 438px) {
+  .xap-player .xap-volume__value {
+    display: none;
+  }
+}
+
+@container xap-player (max-width: 400px) {
+  .xap-player .xap-volume__bar {
+    display: none;
+  }
+}
+
+@container xap-player (max-width: 342px) {
+  .xap-player__loop-btn,
+  .xap-player__shuffle-btn {
+    display: none;
+  }
+}
+
+@container xap-player (max-width: 290px) {
+  .xap-player__quality {
+    display: none;
+  }
+}
+
+@container xap-player (max-width: 264px) {
+  .xap-player__pip-btn {
+    display: none;
+  }
+}
+
+.xap-player__resize-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  touch-action: none;
+  background: linear-gradient(
+    135deg,
+    transparent 0 55%,
+    var(--xap-fg-muted) 55% 62%,
+    transparent 62% 75%,
+    var(--xap-fg-muted) 75% 82%,
+    transparent 82%
+  );
+  opacity: 0.5;
+  transition: opacity var(--xap-dur) var(--xap-ease);
+}
+
+.xap-player__resize-handle:hover {
+  opacity: 1;
+}
+
+/* ---- fullscreen: fill everything except the panel, bars over the video ---- */
+
+.xap-root .xap-player[data-fullscreen="true"] {
+  /* Fullscreen fills everything except the panel; keep the panel on top. */
+  z-index: 5;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  /* Bars float over the picture: lift the text colors a little for legibility. */
+  --xap-fg: #f4f4f1;
+  --xap-fg-muted: #c3c5ca;
+  --xap-bg-hover: rgba(255, 255, 255, 0.14);
+  --xap-bg-active: rgba(255, 255, 255, 0.22);
+  --xap-border: rgba(255, 255, 255, 0.28);
+}
+
+.xap-player[data-fullscreen="true"] .xap-player__stage {
+  position: absolute;
+  inset: 0;
+}
+
+.xap-player[data-fullscreen="true"] .xap-player__titlebar,
+.xap-player[data-fullscreen="true"] .xap-player__bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  border: none;
+  background: rgba(18, 19, 21, 0.74);
+  cursor: default;
+  transition: opacity var(--xap-dur-slow) var(--xap-ease);
+}
+
+.xap-player[data-fullscreen="true"] .xap-player__titlebar {
+  top: 0;
+}
+
+.xap-player[data-fullscreen="true"] .xap-player__bottom {
+  bottom: 0;
+}
+
+/* The media info and the full-text sheet sit above the bottom bar in fullscreen. */
+.xap-player[data-fullscreen="true"] .xap-info-sheet {
+  bottom: 52px;
+}
+
+.xap-player[data-fullscreen="true"] .xap-info {
+  bottom: 52px;
+  transition: opacity var(--xap-dur-slow) var(--xap-ease);
+}
+
+.xap-player[data-controls-hidden="true"],
+.xap-player[data-controls-hidden="true"] .xap-player__stage {
+  cursor: none;
+}
+
+.xap-player[data-controls-hidden="true"] .xap-player__titlebar,
+.xap-player[data-controls-hidden="true"] .xap-player__bottom,
+.xap-player[data-controls-hidden="true"] .xap-info {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---- post actions: like / bookmark / repost (F-4C) ----
+   The accent colour is reserved for "now playing", so "on" is shown by the ink colour
+   (--xap-fg, light inside the dark player) filling the glyph; "off" is a line drawing. */
+
+.xap-post-actions {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.xap-info-sheet__header .xap-post-actions {
+  margin-left: auto;
+}
+
+.xap-post-actions__btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: var(--xap-radius-sm);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  cursor: pointer;
+  transition:
+    background-color var(--xap-dur) var(--xap-ease),
+    color var(--xap-dur) var(--xap-ease),
+    opacity var(--xap-dur) var(--xap-ease),
+    transform var(--xap-dur) var(--xap-ease);
+}
+
+.xap-post-actions__btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.xap-post-actions__btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.xap-post-actions__btn[aria-pressed="true"] {
+  color: var(--xap-fg);
+}
+
+.xap-post-actions__btn:disabled {
+  opacity: 0.4;
+  cursor: progress;
+}
+
+.xap-post-actions__btn:focus-visible {
+  outline: 2px solid var(--xap-focus);
+  outline-offset: 1px;
+}

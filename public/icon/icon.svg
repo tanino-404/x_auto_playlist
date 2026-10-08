@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- X Auto Playlist: a play triangle sliced into a three-row queue. -->
+  <rect width="128" height="128" rx="29" fill="#0f8076"/>
+  <path d="M42 36v56l48-28z" fill="#fbfbfa" stroke="#fbfbfa" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M30 48h72v8H30zM30 72h72v8H30z" fill="#0f8076"/>
+</svg>

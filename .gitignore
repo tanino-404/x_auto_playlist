@@ -1,0 +1,10 @@
+node_modules/
+.output/
+.wxt/
+*.log
+.DS_Store
+Thumbs.db
+
+# Real X API responses captured by the host for local testing. They contain personal
+# timeline data and must never be committed.
+tests/fixtures/real/
